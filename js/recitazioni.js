@@ -21,7 +21,8 @@
     bgVol: 0.15,
     cachedUrls: {},      // url -> true
     filter: '',
-    downloading: null    // url currently downloading
+    downloading: null,   // url currently downloading
+    moreOpen: false      // pannello «Sottofondo e offline» aperto
   };
 
   /* Carica preferenze salvate */
@@ -169,8 +170,8 @@
       });
       navigator.mediaSession.setActionHandler('play', function () { audioEl.play(); });
       navigator.mediaSession.setActionHandler('pause', function () { audioEl.pause(); });
-      navigator.mediaSession.setActionHandler('seekbackward', function () { audioEl.currentTime = Math.max(0, audioEl.currentTime - 15); });
-      navigator.mediaSession.setActionHandler('seekforward', function () { audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + 15); });
+      navigator.mediaSession.setActionHandler('seekbackward', function () { skip(-15); });
+      navigator.mediaSession.setActionHandler('seekforward', function () { skip(15); });
     }
 
     audioEl.play().then(function () {
@@ -194,6 +195,57 @@
       syncBackgroundSound(false);
       renderPlayerCard();
     }
+  }
+
+  function skip(delta) {
+    if (!audioEl.duration) return;
+    audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime + delta));
+  }
+
+  /* Lettore compatto fisso in basso: resta a portata di pollice mentre si scorre l'elenco */
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+  var ICON_BWD = '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12.5 8c-3.1 0-5.8 1.9-6.9 4.7l-2.1-2.1V16h5.4L6.8 13.9c.9-2.2 3-3.9 5.7-3.9 3.3 0 6 2.7 6 6s-2.7 6-6 6c-1.7 0-3.2-.7-4.2-1.8l-1.4 1.4c1.4 1.5 3.4 2.4 5.6 2.4 4.4 0 8-3.6 8-8s-3.6-8-8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>';
+  var ICON_FWD = '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M11.5 8c3.1 0 5.8 1.9 6.9 4.7l2.1-2.1V16h-5.4l2.1-2.1c-.9-2.2-3-3.9-5.7-3.9-3.3 0-6 2.7-6 6s2.7 6 6 6c1.7 0 3.2-.7 4.2-1.8l1.4 1.4c-1.4 1.5-3.4 2.4-5.6 2.4-4.4 0-8-3.6-8-8s3.6-8 8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>';
+  var dockObserver = null;
+
+  function renderDock() {
+    var dock = document.getElementById('q-dock');
+    if (!dock) return;
+    var s = getSurah(state.surah);
+    var r = D.reciters[state.reciter];
+    var t = document.getElementById('q-dock-title');
+    var sub = document.getElementById('q-dock-sub');
+    var pl = document.getElementById('q-dock-play');
+    if (t) t.textContent = s.n + '. ' + s.nome;
+    if (sub) sub.textContent = r.nome;
+    if (pl) {
+      pl.innerHTML = state.playing ? ICON_PAUSE : ICON_PLAY;
+      pl.setAttribute('aria-label', state.playing ? 'Pausa' : 'Avvia');
+    }
+  }
+
+  function setupDock() {
+    if (dockObserver) { dockObserver.disconnect(); dockObserver = null; }
+    var dock = document.getElementById('q-dock');
+    var box = document.getElementById('q-player-box');
+    if (!dock || !box) return;
+    document.getElementById('q-dock-bwd').addEventListener('click', function () { skip(-15); });
+    document.getElementById('q-dock-fwd').addEventListener('click', function () { skip(15); });
+    document.getElementById('q-dock-play').addEventListener('click', togglePlay);
+    document.getElementById('q-dock-prog').addEventListener('input', function (e) {
+      if (audioEl.duration) audioEl.currentTime = (e.target.value / 100) * audioEl.duration;
+    });
+    /* il lettore compatto compare solo quando quello grande è uscito dallo schermo */
+    if ('IntersectionObserver' in window) {
+      dockObserver = new IntersectionObserver(function (entries) {
+        dock.classList.toggle('show', !entries[0].isIntersecting);
+      }, { threshold: 0.05 });
+      dockObserver.observe(box);
+    } else {
+      dock.classList.add('show');
+    }
+    renderDock();
   }
 
   function fmtTime(sec) {
@@ -233,6 +285,8 @@
     }
     if (cur) cur.textContent = fmtTime(audioEl.currentTime);
     if (dur && audioEl.duration) dur.textContent = fmtTime(audioEl.duration);
+    var dprog = document.getElementById('q-dock-prog');
+    if (dprog && audioEl.duration) dprog.value = (audioEl.currentTime / audioEl.duration) * 100;
   });
 
   /* Rendering dell'interfaccia */
@@ -240,25 +294,19 @@
     var v = document.getElementById('v-recitazioni');
     if (!v) return;
 
-    var curR = D.reciters[state.reciter];
-
     var html = '' +
       '<div class="top-nav-row">' +
         '<a href="#calma" class="back-link">← Torna a Calma</a>' +
       '</div>' +
 
       '<h1>Recitazioni coraniche</h1>' +
-      '<p class="lede">Secondo la tradizione <strong>Hafs</strong> (scuola di Kūfa / Iraq) in stile <strong>Mujawwad</strong>: recitazione solenne, lenta e distensiva, adatta al riposo e alla riduzione dell\'acufene.</p>' +
+      '<p class="lede">Tradizione <strong>Hafs</strong>, stile <strong>Mujawwad</strong>: recitazione lenta e distensiva, adatta al riposo.</p>' +
 
       '<!-- Scelta del Maestro -->' +
-      '<div class="panel">' +
-        '<h2>Scegli la voce</h2>' +
-        '<div class="chips q-reciter-chips" role="radiogroup" aria-label="Seleziona il recitatore">' +
-          '<button type="button" class="chip' + (state.reciter === 'minshawi' ? ' on' : '') + '" data-reciter="minshawi">Al-Minshawi <small>(1920–1969)</small></button>' +
-          '<button type="button" class="chip' + (state.reciter === 'basit' ? ' on' : '') + '" data-reciter="basit">Abdul Basit <small>(1927–1988)</small></button>' +
-          '<button type="button" class="chip' + (state.reciter === 'hussary' ? ' on' : '') + '" data-reciter="hussary">Al-Hussary <small>(1917–1980)</small></button>' +
-        '</div>' +
-        '<p class="sub" style="margin-top:10px;" id="q-reciter-desc">' + curR.desc + '</p>' +
+      '<div class="q-reciter-chips" role="radiogroup" aria-label="Seleziona il recitatore">' +
+        '<button type="button" class="chip' + (state.reciter === 'minshawi' ? ' on' : '') + '" data-reciter="minshawi">Al-Minshawi <small>1920–1969</small></button>' +
+        '<button type="button" class="chip' + (state.reciter === 'basit' ? ' on' : '') + '" data-reciter="basit">Abdul Basit <small>1927–1988</small></button>' +
+        '<button type="button" class="chip' + (state.reciter === 'hussary' ? ' on' : '') + '" data-reciter="hussary">Al-Hussary <small>1917–1980</small></button>' +
       '</div>' +
 
       '<!-- Player attivo -->' +
@@ -277,9 +325,21 @@
       '</div>' +
       '<div class="list" id="q-all-surahs-list"></div>' +
 
-      '<p class="fine">Registrazioni originali in studio radiofonico ad alta fedeltà (Repubblica Araba d\'Egitto). Streaming pubblico gratuito via CDN MP3Quran, nessun dato personale raccolto. I file salvati offline restano esclusivamente nella memoria locale del tuo dispositivo.</p>';
+      '<p class="fine">Registrazioni originali in studio radiofonico ad alta fedeltà (Repubblica Araba d\'Egitto). Streaming pubblico gratuito via CDN MP3Quran, nessun dato personale raccolto. I file salvati offline restano esclusivamente nella memoria locale del tuo dispositivo.</p>' +
+
+      '<!-- Lettore compatto fisso -->' +
+      '<div class="q-dock" id="q-dock" role="group" aria-label="Comandi di ascolto">' +
+        '<input type="range" class="q-dock-prog" id="q-dock-prog" min="0" max="100" step="0.1" value="0" aria-label="Avanzamento audio">' +
+        '<div class="q-dock-row">' +
+          '<div class="q-dock-info"><strong id="q-dock-title"></strong><small id="q-dock-sub"></small></div>' +
+          '<button type="button" class="q-dock-btn" id="q-dock-bwd" aria-label="Indietro 15 secondi">' + ICON_BWD + '</button>' +
+          '<button type="button" class="q-dock-btn q-dock-main" id="q-dock-play" aria-label="Avvia"></button>' +
+          '<button type="button" class="q-dock-btn" id="q-dock-fwd" aria-label="Avanti 15 secondi">' + ICON_FWD + '</button>' +
+        '</div>' +
+      '</div>';
 
     v.innerHTML = html;
+    setupDock();
 
     // Event listener per recitatori
     var rChips = v.querySelectorAll('[data-reciter]');
@@ -290,8 +350,6 @@
         state.reciter = rId;
         saveSettings();
         rChips.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-reciter') === rId); });
-        var d = document.getElementById('q-reciter-desc');
-        if (d) d.textContent = D.reciters[rId].desc;
         updateCacheIndex();
         renderPlayerCard();
         renderRecommended();
@@ -348,64 +406,59 @@
       '</div>' +
 
       '<div class="q-controls">' +
-        '<button type="button" class="icon-btn q-skip" id="q-bwd" aria-label="Indietro 15 secondi">' +
-          '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12.5 8c-3.1 0-5.8 1.9-6.9 4.7l-2.1-2.1V16h5.4L6.8 13.9c.9-2.2 3-3.9 5.7-3.9 3.3 0 6 2.7 6 6s-2.7 6-6 6c-1.7 0-3.2-.7-4.2-1.8l-1.4 1.4c1.4 1.5 3.4 2.4 5.6 2.4 4.4 0 8-3.6 8-8s-3.6-8-8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>' +
-        '</button>' +
-
+        '<button type="button" class="q-skip" id="q-bwd" aria-label="Indietro 15 secondi">' + ICON_BWD + '<span>15 s</span></button>' +
         '<button type="button" class="q-play-btn" id="q-play-toggle" aria-label="' + (state.playing ? 'Pausa' : 'Avvia') + '">' +
-          (state.playing
-            ? '<svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
-            : '<svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>') +
+          (state.playing ? ICON_PAUSE : ICON_PLAY).replace(/="30"/g, '="38"') +
         '</button>' +
-
-        '<button type="button" class="icon-btn q-skip" id="q-fwd" aria-label="Avanti 15 secondi">' +
-          '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M11.5 8c3.1 0 5.8 1.9 6.9 4.7l2.1-2.1V16h-5.4l2.1-2.1c-.9-2.2-3-3.9-5.7-3.9-3.3 0-6 2.7-6 6s2.7 6 6 6c1.7 0 3.2-.7 4.2-1.8l1.4 1.4c-1.4 1.5-3.4 2.4-5.6 2.4-4.4 0-8-3.6-8-8s3.6-8 8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>' +
-        '</button>' +
+        '<button type="button" class="q-skip" id="q-fwd" aria-label="Avanti 15 secondi">' + ICON_FWD + '<span>15 s</span></button>' +
       '</div>' +
 
-      '<!-- Mix Sottofondo Naturale -->' +
-      '<div class="q-mix-box">' +
-        '<div class="q-mix-head">' +
-          '<span class="q-mix-label">Sottofondo sonoro Bonaccia:</span>' +
-          '<select id="q-bg-select" aria-label="Seleziona sottofondo ambientale">' +
-            '<option value="nessuno"' + (state.bgPreset === 'nessuno' ? ' selected' : '') + '>Nessuno (voce pura)</option>' +
-            '<option value="pioggia"' + (state.bgPreset === 'pioggia' ? ' selected' : '') + '>+ Pioggia leggera</option>' +
-            '<option value="vento"' + (state.bgPreset === 'vento' ? ' selected' : '') + '>+ Vento morbido</option>' +
-            '<option value="onde"' + (state.bgPreset === 'onde' ? ' selected' : '') + '>+ Onde lente</option>' +
-            '<option value="ruscello"' + (state.bgPreset === 'ruscello' ? ' selected' : '') + '>+ Ruscello calmo</option>' +
-          '</select>' +
+      '<details class="q-more" id="q-more"' + (state.moreOpen ? ' open' : '') + '>' +
+        '<summary>Sulla voce, sottofondo e offline' + (state.bgPreset !== 'nessuno' ? ' <small class="tenue">· ' + state.bgPreset + '</small>' : '') + (isSaved ? ' <small class="tenue">· salvata</small>' : '') + '</summary>' +
+        '<p class="sub q-reciter-desc">' + r.desc + '</p>' +
+
+        '<div class="q-mix-box">' +
+          '<div class="q-mix-head">' +
+            '<span class="q-mix-label">Sottofondo sonoro Bonaccia:</span>' +
+            '<select id="q-bg-select" aria-label="Seleziona sottofondo ambientale">' +
+              '<option value="nessuno"' + (state.bgPreset === 'nessuno' ? ' selected' : '') + '>Nessuno (voce pura)</option>' +
+              '<option value="pioggia"' + (state.bgPreset === 'pioggia' ? ' selected' : '') + '>+ Pioggia leggera</option>' +
+              '<option value="vento"' + (state.bgPreset === 'vento' ? ' selected' : '') + '>+ Vento morbido</option>' +
+              '<option value="onde"' + (state.bgPreset === 'onde' ? ' selected' : '') + '>+ Onde lente</option>' +
+              '<option value="ruscello"' + (state.bgPreset === 'ruscello' ? ' selected' : '') + '>+ Ruscello calmo</option>' +
+            '</select>' +
+          '</div>' +
+          (state.bgPreset !== 'nessuno'
+            ? '<div class="q-mix-slider-row">' +
+                '<small class="tenue">Livello sottofondo:</small>' +
+                '<input type="range" id="q-bg-vol" min="0.05" max="0.4" step="0.02" value="' + state.bgVol + '" aria-label="Volume sottofondo">' +
+              '</div>'
+            : '') +
         '</div>' +
-        (state.bgPreset !== 'nessuno'
-          ? '<div class="q-mix-slider-row">' +
-              '<small class="tenue">Livello sottofondo:</small>' +
-              '<input type="range" id="q-bg-vol" min="0.05" max="0.4" step="0.02" value="' + state.bgVol + '" aria-label="Volume sottofondo">' +
-            '</div>'
-          : '') +
-      '</div>' +
 
-      '<!-- Tasto Offline -->' +
-      '<div class="q-offline-row">' +
-        '<button type="button" class="btn secondary piccolo q-btn-offline" id="q-offline-btn"' + (isDownloading ? ' disabled' : '') + '>' +
-          (isDownloading ? 'Scaricamento in corso...' : (isSaved ? '✓ Salvato sul telefono (offline)' : '📥 Salva sul telefono (ascolto offline)')) +
-        '</button>' +
-        '<small class="tenue">' + (isSaved ? 'Disponibile anche in modalità aereo' : 'In streaming CDN (0 MB occupati)') + '</small>' +
-      '</div>';
+        '<div class="q-offline-row">' +
+          '<button type="button" class="btn secondary piccolo q-btn-offline" id="q-offline-btn"' + (isDownloading ? ' disabled' : '') + '>' +
+            (isDownloading ? 'Scaricamento in corso...' : (isSaved ? '✓ Salvato sul telefono (offline)' : '📥 Salva sul telefono (ascolto offline)')) +
+          '</button>' +
+          '<small class="tenue">' + (isSaved ? 'Disponibile anche in modalità aereo' : 'In streaming CDN (0 MB occupati)') + '</small>' +
+        '</div>' +
+      '</details>';
 
     box.innerHTML = h;
+    renderDock();
 
     // Event listeners del player
     var btnPlay = document.getElementById('q-play-toggle');
     if (btnPlay) btnPlay.addEventListener('click', togglePlay);
 
     var btnBwd = document.getElementById('q-bwd');
-    if (btnBwd) btnBwd.addEventListener('click', function () {
-      audioEl.currentTime = Math.max(0, audioEl.currentTime - 15);
-    });
+    if (btnBwd) btnBwd.addEventListener('click', function () { skip(-15); });
 
     var btnFwd = document.getElementById('q-fwd');
-    if (btnFwd) btnFwd.addEventListener('click', function () {
-      audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + 15);
-    });
+    if (btnFwd) btnFwd.addEventListener('click', function () { skip(15); });
+
+    var more = document.getElementById('q-more');
+    if (more) more.addEventListener('toggle', function () { state.moreOpen = more.open; });
 
     var prog = document.getElementById('q-prog');
     if (prog) {

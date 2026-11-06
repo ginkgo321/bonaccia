@@ -58,7 +58,7 @@ def test_site(directory, port, pages):
 
 if __name__ == "__main__":
     ok1 = test_site(
-        r"C:\Users\df\Dev\GitHub\Bonaccia (acufene)",
+        r"C:\Users\df\Dev\GitHub\bonaccia",
         8089,
         ["index.html#ora", "index.html#recitazioni"]
     )

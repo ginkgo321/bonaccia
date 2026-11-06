@@ -1,9 +1,9 @@
 /* Bonaccia – service worker: tiene l’app e i suoni in memoria per usarla senza rete. */
-var CACHE = 'bonaccia-v3';
+var CACHE = 'bonaccia-v5';
 var QURAN_CACHE = 'bonaccia-recitazioni-v1';
 var FILES = [
   './', 'index.html', 'manifest.webmanifest',
-  'css/style.css', 'js/audio.js', 'js/content.js', 'js/recitazioni_data.js', 'js/recitazioni.js', 'js/app.js',
+  'css/style.css', 'js/version.js', 'js/audio.js', 'js/content.js', 'js/recitazioni_data.js', 'js/recitazioni.js', 'js/app.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'
 ];
 var NATURA = ['pioggia', 'mare', 'fiume', 'fontana', 'bosco'].map(function (n) { return 'audio/natura/natura_' + n + '.mp3'; });

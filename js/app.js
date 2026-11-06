@@ -432,7 +432,7 @@
     $('#src-hint').textContent = failed ? 'Non riesco a caricare le registrazioni: per ora suonano quelle sintetiche. Serve la rete la prima volta.'
       : loading ? 'Sto caricando la registrazione… intanto suona la versione sintetica.' : '';
     syncMixer(); renderTimer();
-    var showMini = E.playing && currentView !== 'suoni' && $('#night').hidden;
+    var showMini = E.playing && currentView !== 'suoni' && currentView !== 'recitazioni' && $('#night').hidden;
     miniEl.hidden = !showMini;
     $('#mini-title').textContent = title || '';
     var left = E.timerLeft(); $('#mini-sub').textContent = E.timer && left != null ? 'Timer: ' + fmtLeft(left) : '';
@@ -1062,6 +1062,18 @@
     C.capire.forEach(function (c, i) {
       acc.appendChild(h('details', { id: 'cap-' + c.id }, [h('summary', { text: c.title }), h('div', { class: 'body', html: c.html })]));
     });
+    renderVersion();
+  }
+
+  /* versione e data dell'ultimo aggiornamento (js/version.js, scritto da tools/aggiorna.py) */
+  function renderVersion() {
+    var el = $('#app-version'), V = B.Version;
+    if (!el || !V) return;
+    var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(V.date || '');
+    var mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+    var quando = m ? parseInt(m[3], 10) + ' ' + mesi[parseInt(m[2], 10) - 1] + ' ' + m[1] + ', ore ' + m[4] + ':' + m[5] : '';
+    el.innerHTML = 'Versione ' + V.v + (quando ? '<br>Ultimo aggiornamento: ' + quando : '') +
+      '<span class="love">Made with love <span class="heart" aria-hidden="true">♥</span></span>';
   }
 
   /* ================= navigazione ================= */
