@@ -1,5 +1,5 @@
-/* Bonaccia – Motore e interfaccia per le recitazioni coraniche (Hafs Mujawwad).
-   Supporta streaming istantaneo delle 114 Sure dei 3 maestri egiziani,
+/* Bonaccia – Motore e interfaccia per le recitazioni coraniche (tradizione Hafs).
+   Supporta streaming istantaneo delle 114 Sure con 5 voci (alcune con una selezione ristretta di Sure),
    salvataggio selettivo offline nella Cache del browser e mix leggero
    con i suoni ambientali di Bonaccia (pioggia, onde, vento, ruscello). */
 (function () {
@@ -14,6 +14,7 @@
   /* Due elementi audio. Quello «con livelli» passa dal motore di Bonaccia (js/audio.js), che applica un guadagno
      per voce e per Sura (js/recitazioni_livelli.js) e un limitatore: porta tutte le registrazioni allo stesso livello.
      Quello «semplice» è un normale <audio>, usato se i livelli sono spenti o se il percorso con livelli non funziona. */
+  var FROM_NAMES = { ora: 'Ora', calma: 'Calma', sonno: 'Sonno' };
   var RECITERS = ['minshawi', 'basit', 'hussary', 'salimi', 'afasy'].filter(function (id) { return !!D.reciters[id]; });
   var elPlain = new Audio();
   elPlain.preload = 'none';
@@ -620,9 +621,10 @@
     var v = document.getElementById('v-recitazioni');
     if (!v) return;
 
+    var from = FROM_NAMES[B.quranFrom] ? B.quranFrom : 'calma';      // la scheda da cui si è arrivati (impostata da app.js)
     var html = '' +
       '<div class="top-nav-row">' +
-        '<a href="#calma" class="back-link">← Torna a Calma</a>' +
+        '<a href="#' + from + '" class="back-link">← Torna a ' + FROM_NAMES[from] + '</a>' +
       '</div>' +
 
       '<h1>Recitazioni coraniche</h1>' +
@@ -648,11 +650,11 @@
       '<h2 id="q-all-title">📖 Tutte le 114 Sure</h2>' +
       '<p class="sub" id="q-all-sub">Puoi ascoltare in streaming qualsiasi Sura del Corano. Seleziona una Sura per avviare l\'ascolto immediato o salvarla per l\'uso senza rete.</p>' +
       '<div class="q-search-box" id="q-search-wrap">' +
-        '<input type="search" id="q-search-input" placeholder="Cerca Sura per nome, significato o numero (es. Maryam, 55, Il Misericordioso)..." autocomplete="off">' +
+        '<input type="search" id="q-search-input" aria-label="Cerca una Sura" placeholder="Cerca Sura per nome, significato o numero (es. Maryam, 55, Il Misericordioso)..." autocomplete="off">' +
       '</div>' +
       '<div class="list" id="q-all-surahs-list"></div>' +
 
-      '<p class="fine">Registrazioni originali in studio radiofonico ad alta fedeltà (Repubblica Araba d\'Egitto). Streaming pubblico gratuito via CDN MP3Quran, nessun dato personale raccolto. I file salvati offline restano esclusivamente nella memoria locale del tuo dispositivo.</p>' +
+      '<p class="fine">Le recitazioni arrivano in streaming dal servizio pubblico gratuito MP3Quran, che, come ogni sito, vede l’indirizzo del tuo dispositivo mentre ascolti. Bonaccia non raccoglie nessun dato. I file salvati offline restano nella memoria del telefono e si ascoltano anche senza rete.</p>' +
 
       '<!-- Lettore compatto fisso -->' +
       '<div class="q-dock" id="q-dock" role="group" aria-label="Comandi di ascolto">' +
@@ -785,7 +787,7 @@
         '</div>' +
 
         '<label class="check q-level-row"><input type="checkbox" id="q-level"' + (state.leveling ? ' checked' : '') + (LV ? '' : ' disabled') + '> ' +
-          '<span>Pareggia il volume delle voci<small class="tenue" style="display:block">Porta tutte le Sure e le tre voci allo stesso livello, vicino a quello dei suoni di Bonaccia. Se la riproduzione a schermo bloccato si interrompe, spegnilo.</small></span></label>' +
+          '<span>Pareggia il volume delle voci<small class="tenue" style="display:block">Porta tutte le Sure e tutte le voci allo stesso livello, vicino a quello dei suoni di Bonaccia. Se la riproduzione a schermo bloccato si interrompe, spegnilo.</small></span></label>' +
 
         '<div class="q-offline-row">' +
           '<button type="button" class="btn secondary piccolo q-btn-offline" id="q-offline-btn"' + (isDownloading ? ' disabled' : '') + '>' +

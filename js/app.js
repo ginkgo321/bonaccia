@@ -1082,9 +1082,10 @@
     var v = (location.hash || '#ora').slice(1).split('/')[0];
     if (VIEWS.indexOf(v) < 0) v = 'ora';
     if (v === currentView) return;
+    if (v === 'recitazioni') B.quranFrom = ['ora', 'calma', 'sonno'].indexOf(currentView) >= 0 ? currentView : (B.quranFrom || 'calma');
     currentView = v;
     $$('.view').forEach(function (s) { s.hidden = s.id !== 'v-' + v; });
-    $$('#tabs a').forEach(function (a) { if (a.getAttribute('data-tab') === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $$('#tabs a').forEach(function (a) { if (a.getAttribute('data-tab') === (v === 'recitazioni' ? (B.quranFrom || 'calma') : v)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var sec = $('#v-' + v);
     document.title = (v === 'ora' ? '' : (sec ? sec.getAttribute('data-title') : '') + ' – ') + 'Bonaccia';
     window.scrollTo(0, 0);
