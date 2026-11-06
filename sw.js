@@ -1,5 +1,5 @@
 /* Bonaccia – service worker: tiene l’app e i suoni in memoria per usarla senza rete. */
-var CACHE = 'bonaccia-v7';
+var CACHE = 'bonaccia-v8';
 var QURAN_CACHE = 'bonaccia-recitazioni-v1';
 var FILES = [
   './', 'index.html', 'manifest.webmanifest',

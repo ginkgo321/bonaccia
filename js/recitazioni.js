@@ -632,7 +632,7 @@
       '<div class="q-reciter-chips" role="radiogroup" aria-label="Seleziona il recitatore">' +
         RECITERS.map(function (rid) {
           var r = D.reciters[rid];
-          return '<button type="button" class="chip' + (state.reciter === rid ? ' on' : '') + '" data-reciter="' + rid + '">' + (r.corto || r.nome) + ' <small>' + (r.sub || r.anni || '') + '</small></button>';
+          return '<button type="button" class="chip' + (state.reciter === rid ? ' on' : '') + '" data-reciter="' + rid + '">' + (r.corto || r.nome) + '</button>';
         }).join('') +
       '</div>' +
 

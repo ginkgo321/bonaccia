@@ -1,3 +1,3 @@
 /* Bonaccia – versione del sito. Questo file lo riscrive tools/aggiorna.py: non modificarlo a mano. */
 window.Bonaccia = window.Bonaccia || {};
-window.Bonaccia.Version = { v: '1.4', date: '2026-11-06 19:57' };
+window.Bonaccia.Version = { v: '1.5', date: '2026-11-06 20:02' };
