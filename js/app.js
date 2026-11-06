@@ -37,6 +37,9 @@
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem(PFX + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set: function (k, v) { try { localStorage.setItem(PFX + k, JSON.stringify(v)); } catch (e) {} },
+    /* letture con controllo del tipo: dati salvati vecchi o rovinati non devono bloccare l'app */
+    getArr: function (k) { var v = this.get(k, []); return Array.isArray(v) ? v : []; },
+    getObj: function (k) { var v = this.get(k, {}); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; },
     clearAll: function () {
       try { Object.keys(localStorage).filter(function (k) { return k.indexOf(PFX) === 0; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
     }
@@ -48,7 +51,23 @@
     sl: { preset: 'notte', min: null, awake: false },
     br: { pattern: 'dolce', dur: 3, cue: true },
     voice: true, mixes: []
-  }, store.get('settings', {}));
+  }, store.getObj('settings'));
+  /* impostazioni salvate con tipi sbagliati (versioni vecchie, modifiche a mano): si rimettono i valori di partenza */
+  (function () {
+    function obj(v) { return v && typeof v === 'object' && !Array.isArray(v); }
+    S.sl = Object.assign({ preset: 'notte', min: null, awake: false }, obj(S.sl) ? S.sl : {});
+    S.br = Object.assign({ pattern: 'dolce', dur: 3, cue: true }, obj(S.br) ? S.br : {});
+    if (!Array.isArray(S.mixes)) S.mixes = [];
+    S.mixes = S.mixes.filter(function (m) { return obj(m) && typeof m.name === 'string' && obj(m.layers); });
+    if (typeof S.master !== 'number' || !isFinite(S.master)) S.master = 0.5;
+    if (!obj(S.layers)) S.layers = null;
+    if (S.theme !== 'day' && S.theme !== 'night') S.theme = null;
+    if (S.src !== 'real' && S.src !== 'synth') S.src = 'real';
+    if (typeof S.current !== 'string') S.current = 'pioggia';
+    if (S.timerMin != null && !(S.timerMin > 0)) S.timerMin = null;
+    if (S.timerMode !== 'low' && S.timerMode !== 'off') S.timerMode = 'low';
+    if (!obj(S.zone) || !isFinite(S.zone.lo) || !isFinite(S.zone.hi)) S.zone = null;
+  })();
   var saveTimer = null;
   function saveS() { clearTimeout(saveTimer); saveTimer = setTimeout(function () { store.set('settings', S); }, 250); }
 
@@ -113,7 +132,9 @@
   });
 
   /* ---------- diario: dati ---------- */
-  function diary() { return store.get('diary', []); }
+  function diary() {
+    return store.getArr('diary').filter(function (e) { return e && typeof e === 'object' && (e.type === 'mood' || e.type === 'sleep') && !isNaN(Date.parse(e.ts)); });
+  }
   function saveDiary(a) { store.set('diary', a); }
   function addEntry(e) {
     var a = diary(); e.id = Date.now() + '-' + Math.floor(Math.random() * 1000); e.ts = new Date().toISOString();
@@ -782,7 +803,7 @@
       cl.appendChild(h('li', {}, [h('label', {}, [h('input', { type: 'checkbox', 'data-i': i }), h('span', { text: t })])]));
     });
     cl.addEventListener('change', function (e) {
-      var d = dkey(new Date()), st = store.get('checks', {});
+      var d = dkey(new Date()), st = store.getObj('checks');
       if (st.date !== d) st = { date: d, done: [] };
       var i = +e.target.getAttribute('data-i');
       st.done = st.done.filter(function (x) { return x !== i; });
@@ -791,7 +812,7 @@
     });
     $('#worry-save').addEventListener('click', function () {
       var t = $('#worry-text').value.trim(); if (!t) return;
-      var a = store.get('worries', []); a.unshift({ ts: new Date().toISOString(), text: t }); store.set('worries', a.slice(0, 30));
+      var a = store.getArr('worries'); a.unshift({ ts: new Date().toISOString(), text: t }); store.set('worries', a.slice(0, 30));
       $('#worry-text').value = ''; renderWorries();
     });
   }
@@ -799,19 +820,19 @@
     $$('#sl-preset .chip').forEach(function (c) { c.setAttribute('aria-checked', String(c.getAttribute('data-id') === S.sl.preset)); });
     $$('#sl-timer .chip').forEach(function (c) { var m = c.getAttribute('data-min'); c.setAttribute('aria-checked', String((m === '' ? null : +m) === S.sl.min)); });
     $('#sl-awake').checked = !!S.sl.awake;
-    var st = store.get('checks', {}), d = dkey(new Date());
+    var st = store.getObj('checks'), d = dkey(new Date());
     $$('#checklist input').forEach(function (i) { i.checked = st.date === d && st.done.indexOf(+i.getAttribute('data-i')) >= 0; });
     renderWorries();
   }
   function renderWorries() {
     var box = $('#worry-list'); box.innerHTML = '';
-    store.get('worries', []).slice(0, 5).forEach(function (w, i) {
+    store.getArr('worries').slice(0, 5).forEach(function (w, i) {
       var d = new Date(w.ts);
       box.appendChild(h('div', { class: 'note' }, [
         h('small', { text: d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) }),
         h('span', { text: w.text }),
         h('button', { type: 'button', text: 'Elimina', onclick: function () {
-          var a = store.get('worries', []); a.splice(i, 1); store.set('worries', a); renderWorries();
+          var a = store.getArr('worries'); a.splice(i, 1); store.set('worries', a); renderWorries();
         } })
       ]));
     });
@@ -892,6 +913,7 @@
       } else {
         var a = h('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: 'bonaccia-diario.csv' });
         document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
         info.textContent = 'Fatto.';
       }
     });

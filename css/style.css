@@ -432,7 +432,7 @@ textarea { resize: vertical; margin-bottom: 10px; }
 
 .q-controls { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 10px; }
 .q-play-btn {
-  display: inline-grid; place-items: center; width: 76px; height: 76px; border-radius: 50%;
+  flex: none; display: inline-grid; place-items: center; width: 76px; height: 76px; border-radius: 50%;
   background: var(--deep); color: var(--on-deep); border: 0; cursor: pointer;
   box-shadow: 0 4px 14px rgba(45,91,96,.25); transition: transform .15s;
 }
@@ -540,3 +540,19 @@ textarea { resize: vertical; margin-bottom: 10px; }
 .version { text-align: center; color: var(--ink2); font-size: .88rem; margin: 2rem 0 .4rem; line-height: 1.6; }
 .version .love { display: block; font-family: var(--serif); font-size: 1rem; margin-top: .2rem; }
 .version .heart { color: var(--warm); }
+
+/* schermi stretti (telefoni): i cinque tasti del lettore devono stare nella scheda */
+@media (max-width: 400px) {
+  .q-controls { gap: 4px; }
+  .q-play-btn { width: 66px; height: 66px; }
+  .q-skip { min-width: 56px; }
+  .q-nav { width: 40px; }
+}
+@media (max-width: 350px) {
+  .q-player-card { padding: 16px 14px; }
+  .q-controls { gap: 2px; }
+  .q-play-btn { width: 62px; height: 62px; }
+  .q-skip { min-width: 52px; }
+  .q-nav { width: 36px; }
+  .q-now-title { font-size: 1.1rem; }
+}

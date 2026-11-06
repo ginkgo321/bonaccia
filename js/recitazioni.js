@@ -23,6 +23,8 @@
   elRouted.crossOrigin = 'anonymous';
   var audioEl = elPlain;
   var routedFailed = false;
+  var fallbackTrial = false;   // si sta provando l'audio semplice dopo un errore del percorso con livelli
+  var playToken = 0;           // ogni avvio ha il suo numero: l'esito di un tentativo già sostituito si ignora
   var pendingSeek = null;
   var LV = B.QuranLevels || null;
 
@@ -49,9 +51,10 @@
     var saved = localStorage.getItem('bonaccia.quran_settings');
     if (saved) {
       var parsed = JSON.parse(saved);
-      if (parsed.reciter && D.reciters[parsed.reciter]) state.reciter = parsed.reciter;
-      if (parsed.surah) state.surah = parsed.surah;
-      if (parsed.bgPreset) state.bgPreset = parsed.bgPreset;
+      if (typeof parsed.reciter === 'string' && Object.prototype.hasOwnProperty.call(D.reciters, parsed.reciter)) state.reciter = parsed.reciter;
+      var sn = parseInt(parsed.surah, 10);
+      if (sn >= 1 && sn <= D.surahs.length) state.surah = sn;
+      if (['nessuno', 'pioggia', 'vento', 'onde', 'ruscello'].indexOf(parsed.bgPreset) >= 0) state.bgPreset = parsed.bgPreset;
       if (typeof parsed.bgRel === 'number') state.bgRel = Math.max(-24, Math.min(-4, parsed.bgRel));
       if (typeof parsed.leveling === 'boolean') state.leveling = parsed.leveling;
       if (parsed.endMode === 'next' || parsed.endMode === 'repeat') state.endMode = parsed.endMode;
@@ -88,7 +91,8 @@
   }
   function isAllowed(rid, n) {
     var r = D.reciters[rid];
-    return !!r && (!r.surahs || r.surahs.indexOf(n) >= 0);
+    if (!r || typeof n !== 'number' || n % 1 !== 0 || n < 1 || n > D.surahs.length) return false;
+    return !r.surahs || r.surahs.indexOf(n) >= 0;
   }
   function neighbour(n, dir) {
     var list = reciterSurahs(state.reciter);
@@ -288,16 +292,17 @@
         artist: r.nome + ' (' + (r.stile ? r.stile.replace(/ \(studio\)/, '') : 'Hafs') + ')',
         album: 'Recitazioni Coraniche - Bonaccia'
       });
-      navigator.mediaSession.setActionHandler('play', function () { playSurah(state.surah); });
-      navigator.mediaSession.setActionHandler('pause', function () { audioEl.pause(); });
-      navigator.mediaSession.setActionHandler('seekbackward', function () { skip(-15); });
-      navigator.mediaSession.setActionHandler('seekforward', function () { skip(15); });
-      navigator.mediaSession.setActionHandler('previoustrack', function () { goPrev(); });
-      navigator.mediaSession.setActionHandler('nexttrack', function () { goNext(); });
-      navigator.mediaSession.setActionHandler('seekto', function (d) {
-        if (d && typeof d.seekTime === 'number' && audioEl.duration) audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, d.seekTime));
-      });
     } catch (e) {}
+    function azione(nome, fn) { try { navigator.mediaSession.setActionHandler(nome, fn); } catch (e) {} }   // un browser può non supportarla
+    azione('play', function () { playSurah(state.surah); });
+    azione('pause', function () { audioEl.pause(); });
+    azione('seekbackward', function () { skip(-15); });
+    azione('seekforward', function () { skip(15); });
+    azione('previoustrack', function () { goPrev(); });
+    azione('nexttrack', function () { goNext(); });
+    azione('seekto', function (d) {
+      if (d && typeof d.seekTime === 'number' && audioEl.duration) audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, d.seekTime));
+    });
   }
 
   function playSurah(n, seekTo) {
@@ -319,21 +324,26 @@
     syncTransport();
     renderActiveItem();
 
+    var token = ++playToken;
     var p = audioEl.play();
     if (p && p.then) {
       p.then(function () {
+        if (token !== playToken) return;
         state.playing = true;
         syncBackgroundSound(true);
         applyMediaSession(s);
         renderPlayerCard();
         renderActiveItem();
       }).catch(function (err) {
+        if (token !== playToken) return;               // un tentativo più recente ha preso il posto di questo
         if (err && err.name === 'AbortError') return;   // pausa o cambio Sura durante il caricamento
-        if (audioEl === elRouted && !routedFailed) {   // il percorso con livelli non parte: si ripiega sull'audio semplice
+        if (audioEl === elRouted && !routedFailed) {   // il percorso con livelli non parte: si prova l'audio semplice
           routedFailed = true;
+          fallbackTrial = true;
           playSurah(n, seekTo);
           return;
         }
+        if (fallbackTrial) { routedFailed = false; fallbackTrial = false; }   // falliva anche l'audio semplice: era la rete, non i livelli
         state.playing = false;
         state.loading = false;
         renderPlayerCard();
@@ -554,6 +564,7 @@
     });
     el.addEventListener('playing', function () {
       if (!mine()) return;
+      if (el === elPlain) fallbackTrial = false;       // l'audio semplice funziona: il guasto era del percorso con livelli
       state.loading = false;
       syncTransport();
     });
@@ -601,9 +612,11 @@
       if (!el.getAttribute('src')) return;                  // elemento svuotato da noi (resetMedia): non è un guasto
       if (el === elRouted && !routedFailed && (state.playing || state.loading)) {
         routedFailed = true;
+        fallbackTrial = true;
         playSurah(state.surah);
         return;
       }
+      if (el === elPlain && fallbackTrial) { routedFailed = false; fallbackTrial = false; }
       state.loading = false;
       syncTransport();
     });
@@ -797,8 +810,10 @@
         '</div>' +
       '</details>';
 
+    var focusId = (document.activeElement && box.contains(document.activeElement)) ? document.activeElement.id : '';
     box.innerHTML = h;
     renderDock();      // aggiorna anche play/pausa e barra della card
+    if (focusId) { var fe = document.getElementById(focusId); if (fe && !fe.disabled) fe.focus(); }   // la scheda viene ridisegnata: il focus da tastiera non si perde
 
     var btnPlay = document.getElementById('q-play-toggle');
     if (btnPlay) btnPlay.addEventListener('click', togglePlay);
@@ -1015,7 +1030,7 @@
   // Esporta interfaccia pubblica
   B.QuranPlayer = {
     _debugSleep: function (sec) { sleepClear(); state.sleepMin = 1; state.sleepEnd = Date.now() + sec * 1000; sleepIv = setInterval(sleepTick, 1000); sleepLabel(); },
-    _debugState: function () { return { surah: state.surah, playing: state.playing, loading: state.loading, scrub: state.scrub, endMode: state.endMode, fading: fading, sleepMin: state.sleepMin }; },
+    _debugState: function () { return { surah: state.surah, playing: state.playing, loading: state.loading, scrub: state.scrub, endMode: state.endMode, fading: fading, sleepMin: state.sleepMin, paused: audioEl.paused, src: (audioEl.getAttribute('src') || '').slice(-7), reciter: state.reciter, time: audioEl.currentTime }; },
     _debug: function () { return { audioEl: audioEl === elRouted ? 'routed' : 'plain', routedFailed: routedFailed, master: bgMaster(), gain: levelDb(state.reciter, state.surah) }; },
     init: function () {
       renderView();
