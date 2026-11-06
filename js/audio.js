@@ -468,6 +468,14 @@
       g.cancelScheduledValues(t);
       if (immediate) g.setValueAtTime(dbToGain(db), t); else g.setTargetAtTime(dbToGain(db), t, 0.05);
     },
+    /* dissolvenza dell'audio esterno fino al silenzio in 'sec' secondi (timer di spegnimento) */
+    fadeMedia: function (sec) {
+      if (!this.vgain) return;
+      var g = this.vgain.gain, t = this.ctx.currentTime;
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(0.0001, t + Math.max(0.1, sec));
+    },
     mediaActive: function (on) {
       this.extActive = !!on;
       if (on) { this.ensure(); return; }

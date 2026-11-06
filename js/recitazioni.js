@@ -14,6 +14,7 @@
   /* Due elementi audio. Quello «con livelli» passa dal motore di Bonaccia (js/audio.js), che applica un guadagno
      per voce e per Sura (js/recitazioni_livelli.js) e un limitatore: porta tutte le registrazioni allo stesso livello.
      Quello «semplice» è un normale <audio>, usato se i livelli sono spenti o se il percorso con livelli non funziona. */
+  var RECITERS = ['minshawi', 'basit', 'hussary', 'salimi', 'afasy'].filter(function (id) { return !!D.reciters[id]; });
   var elPlain = new Audio();
   elPlain.preload = 'none';
   var elRouted = new Audio();
@@ -34,7 +35,12 @@
     cachedUrls: {},      // url -> true
     filter: '',
     downloading: null,   // url currently downloading
-    moreOpen: false      // pannello «Sottofondo e offline» aperto
+    moreOpen: false,     // pannello «Sottofondo e offline» aperto
+    endMode: 'stop',     // a fine Sura: 'stop' | 'next' | 'repeat'
+    sleepMin: 0,         // timer di spegnimento (minuti, 0 = nessuno)
+    sleepEnd: 0,         // istante di spegnimento (ms), 0 = non ancora partito
+    loading: false,      // in attesa dei primi dati dalla rete
+    scrub: false         // si sta trascinando la barra
   };
 
   /* Carica preferenze salvate */
@@ -47,8 +53,11 @@
       if (parsed.bgPreset) state.bgPreset = parsed.bgPreset;
       if (typeof parsed.bgRel === 'number') state.bgRel = Math.max(-24, Math.min(-4, parsed.bgRel));
       if (typeof parsed.leveling === 'boolean') state.leveling = parsed.leveling;
+      if (parsed.endMode === 'next' || parsed.endMode === 'repeat') state.endMode = parsed.endMode;
     }
   } catch (e) {}
+
+  if (!isAllowed(state.reciter, state.surah)) state.surah = reciterSurahs(state.reciter)[0].n;
 
   function saveSettings() {
     try {
@@ -57,7 +66,8 @@
         surah: state.surah,
         bgPreset: state.bgPreset,
         bgRel: state.bgRel,
-        leveling: state.leveling
+        leveling: state.leveling,
+        endMode: state.endMode
       }));
     } catch (e) {}
   }
@@ -67,6 +77,32 @@
       if (D.surahs[i].n === n) return D.surahs[i];
     }
     return D.surahs[0];
+  }
+
+  /* Sure disponibili con un recitatore: se ha «surahs», solo quelle (selezione protetta, vedi recitazioni_data.js) */
+  function reciterSurahs(rid) {
+    var r = D.reciters[rid];
+    if (!r || !r.surahs) return D.surahs;
+    return D.surahs.filter(function (s) { return r.surahs.indexOf(s.n) >= 0; });
+  }
+  function isAllowed(rid, n) {
+    var r = D.reciters[rid];
+    return !!r && (!r.surahs || r.surahs.indexOf(n) >= 0);
+  }
+  function neighbour(n, dir) {
+    var list = reciterSurahs(state.reciter);
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].n === n) return list[i + dir] ? list[i + dir].n : null;
+    }
+    return null;
+  }
+  function isRecommended(rid, s) {
+    var r = D.reciters[rid];
+    return s.cons || !!(r && r.cons && r.cons.indexOf(s.n) >= 0);
+  }
+  function surahNote(rid, s) {
+    var r = D.reciters[rid];
+    return (r && r.note && r.note[s.n]) || s.nota || '';
   }
 
   function getAudioUrl(reciterId, surahPad) {
@@ -124,6 +160,17 @@
           btnEl.textContent = 'Scaricamento in corso...';
         }
         state.downloading = url;
+        try {   // file enormi (Al-Baqarah di Salimi: 269 MB) non si tengono in memoria sul telefono
+          var head = await fetch(url, { method: 'HEAD' });
+          var size = parseInt(head.headers.get('content-length') || '0', 10);
+          if (size > 100 * 1024 * 1024) {
+            state.downloading = null;
+            if (btnEl) { btnEl.disabled = false; btnEl.textContent = '📥 Salva sul telefono (ascolto offline)'; }
+            alert('Questa Sura è troppo grande per essere salvata sul telefono (' + Math.round(size / 1048576) + ' MB). Si ascolta solo in streaming.');
+            renderPlayerCard();
+            return;
+          }
+        } catch (e) { /* senza HEAD si prova comunque */ }
         var res = await fetch(url);
         if (!res.ok) throw new Error('Errore di rete: ' + res.status);
         await c.put(url, res);
@@ -237,17 +284,23 @@
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: s.n + '. ' + s.nome + ' (' + s.trad + ') - ' + s.ar,
-        artist: r.nome + ' (Mujawwad - Hafs)',
+        artist: r.nome + ' (' + (r.stile ? r.stile.replace(/ \(studio\)/, '') : 'Hafs') + ')',
         album: 'Recitazioni Coraniche - Bonaccia'
       });
       navigator.mediaSession.setActionHandler('play', function () { playSurah(state.surah); });
       navigator.mediaSession.setActionHandler('pause', function () { audioEl.pause(); });
       navigator.mediaSession.setActionHandler('seekbackward', function () { skip(-15); });
       navigator.mediaSession.setActionHandler('seekforward', function () { skip(15); });
+      navigator.mediaSession.setActionHandler('previoustrack', function () { goPrev(); });
+      navigator.mediaSession.setActionHandler('nexttrack', function () { goNext(); });
+      navigator.mediaSession.setActionHandler('seekto', function (d) {
+        if (d && typeof d.seekTime === 'number' && audioEl.duration) audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, d.seekTime));
+      });
     } catch (e) {}
   }
 
   function playSurah(n, seekTo) {
+    if (!isAllowed(state.reciter, n)) return;      // selezione protetta: nessuna Sura fuori elenco parte mai
     var s = getSurah(n);
     state.surah = n;
     saveSettings();
@@ -258,8 +311,12 @@
       audioEl.src = url;
     }
     if (typeof seekTo === 'number') pendingSeek = seekTo;
+    audioEl.volume = 1;          // dopo una dissolvenza del timer (dove il volume si può regolare)
     applyLevel(true);
     applyMediaSession(s);
+    state.loading = true;
+    syncTransport();
+    renderActiveItem();
 
     var p = audioEl.play();
     if (p && p.then) {
@@ -269,28 +326,45 @@
         applyMediaSession(s);
         renderPlayerCard();
         renderActiveItem();
-      }).catch(function () {
+      }).catch(function (err) {
+        if (err && err.name === 'AbortError') return;   // pausa o cambio Sura durante il caricamento
         if (audioEl === elRouted && !routedFailed) {   // il percorso con livelli non parte: si ripiega sull'audio semplice
           routedFailed = true;
           playSurah(n, seekTo);
           return;
         }
         state.playing = false;
+        state.loading = false;
         renderPlayerCard();
         alert('Non è stato possibile avviare la recitazione. Controlla la connessione.');
       });
     }
   }
 
+  /* Svuota l'elemento audio (cambio di voce o di Sura senza avviare l'ascolto): niente tempi del brano precedente */
+  function resetMedia() {
+    try { audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load(); } catch (e) {}
+    // load() annulla l'evento 'pause' in coda: lo stato si aggiorna qui
+    state.playing = false;
+    state.loading = false;
+    syncBackgroundSound(false);
+    if (B.Engine) B.Engine.mediaActive(false);
+  }
+
   function togglePlay() {
-    if (audioEl.paused || !state.playing) {
-      playSurah(state.surah);
+    if (state.playing || state.loading) {
+      audioEl.pause();            // l'evento 'pause' aggiorna lo stato e ferma il sottofondo
     } else {
-      audioEl.pause();
-      state.playing = false;
-      syncBackgroundSound(false);
-      renderPlayerCard();
+      playSurah(state.surah);
     }
+  }
+
+  /* Sura precedente e successiva */
+  function goNext() { var n = neighbour(state.surah, 1); if (n) playSurah(n); }
+  function goPrev() {
+    if (audioEl.currentTime > 5) { audioEl.currentTime = 0; return; }
+    var n = neighbour(state.surah, -1);
+    if (n) playSurah(n);
   }
 
   function skip(delta) {
@@ -303,7 +377,66 @@
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
   var ICON_BWD = '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12.5 8c-3.1 0-5.8 1.9-6.9 4.7l-2.1-2.1V16h5.4L6.8 13.9c.9-2.2 3-3.9 5.7-3.9 3.3 0 6 2.7 6 6s-2.7 6-6 6c-1.7 0-3.2-.7-4.2-1.8l-1.4 1.4c1.4 1.5 3.4 2.4 5.6 2.4 4.4 0 8-3.6 8-8s-3.6-8-8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>';
   var ICON_FWD = '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M11.5 8c3.1 0 5.8 1.9 6.9 4.7l2.1-2.1V16h-5.4l2.1-2.1c-.9-2.2-3-3.9-5.7-3.9-3.3 0-6 2.7-6 6s2.7 6 6 6c1.7 0 3.2-.7 4.2-1.8l1.4 1.4c-1.4 1.5-3.4 2.4-5.6 2.4-4.4 0-8-3.6-8-8s3.6-8 8-8z" fill="currentColor"/><text x="12" y="17" font-size="7" text-anchor="middle" font-weight="bold" fill="currentColor">15</text></svg>';
+  var ICON_PREV = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5.5v13L9.5 12z"/></svg>';
+  var ICON_NEXT = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><rect x="16.4" y="5" width="2.6" height="14" rx="1"/><path d="M5 5.5v13l9.5-6.5z"/></svg>';
+  var ICON_SPIN = '<svg class="q-spin" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8" opacity=".25"/><path d="M12 4a8 8 0 0 1 8 8"/></svg>';
   var dockObserver = null;
+
+  function fmtTime(sec) {
+    if (!sec || isNaN(sec) || !isFinite(sec)) return '0:00';
+    var h = Math.floor(sec / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    var s = Math.floor(sec % 60);
+    return h ? h + ':' + (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s) : m + ':' + (s < 10 ? '0' + s : s);
+  }
+
+  /* Barra di avanzamento (quella grande e quella del lettore fisso) e tempi.
+     previewPct: mentre si trascina si mostra solo l'anteprima, l'audio si sposta al rilascio. */
+  function updateProgress(previewPct) {
+    if (state.scrub && previewPct == null) return;      // non si tocca la barra mentre la si trascina
+    var dur = audioEl.duration, has = isFinite(dur) && dur > 0;
+    var pct = previewPct != null ? previewPct : (has ? (audioEl.currentTime / dur) * 100 : 0);
+    var cur = has ? (pct / 100) * dur : audioEl.currentTime;
+    ['q-prog', 'q-dock-prog'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = !has;
+      el.value = pct;
+      el.style.setProperty('--p', pct + '%');
+      el.setAttribute('aria-valuetext', has ? fmtTime(cur) + ' su ' + fmtTime(dur) : 'Non ancora caricato');
+    });
+    var c = document.getElementById('q-time-cur');
+    var d = document.getElementById('q-time-dur');
+    if (c) c.textContent = fmtTime(cur);
+    if (d) d.textContent = has ? '−' + fmtTime(dur - cur) : '–:––';
+  }
+
+  function bindScrub(el) {
+    if (!el) return;
+    function commit() {
+      if (!state.scrub) return;
+      state.scrub = false;
+      if (audioEl.duration) audioEl.currentTime = (el.value / 100) * audioEl.duration;
+      updateProgress();
+    }
+    el.addEventListener('input', function () { state.scrub = true; updateProgress(parseFloat(el.value)); });
+    el.addEventListener('change', commit);
+    el.addEventListener('pointerup', commit);
+    el.addEventListener('touchend', commit);
+    el.addEventListener('blur', commit);
+  }
+
+  /* Tasti play/pausa (grande e fisso): riproduzione, pausa o caricamento */
+  function syncTransport() {
+    [['q-play-toggle', 38], ['q-dock-play', 30]].forEach(function (x) {
+      var b = document.getElementById(x[0]);
+      if (!b) return;
+      var icon = state.loading ? ICON_SPIN : (state.playing ? ICON_PAUSE : ICON_PLAY);
+      b.innerHTML = icon.replace(/width="30" height="30"/, 'width="' + x[1] + '" height="' + x[1] + '"');
+      b.setAttribute('aria-label', state.loading ? 'Caricamento, tocca per annullare' : (state.playing ? 'Pausa' : 'Avvia'));
+      b.classList.toggle('is-loading', state.loading);
+    });
+  }
 
   function renderDock() {
     var dock = document.getElementById('q-dock');
@@ -312,13 +445,10 @@
     var r = D.reciters[state.reciter];
     var t = document.getElementById('q-dock-title');
     var sub = document.getElementById('q-dock-sub');
-    var pl = document.getElementById('q-dock-play');
     if (t) t.textContent = s.n + '. ' + s.nome;
     if (sub) sub.textContent = r.nome;
-    if (pl) {
-      pl.innerHTML = state.playing ? ICON_PAUSE : ICON_PLAY;
-      pl.setAttribute('aria-label', state.playing ? 'Pausa' : 'Avvia');
-    }
+    syncTransport();
+    updateProgress();
   }
 
   function setupDock() {
@@ -329,9 +459,7 @@
     document.getElementById('q-dock-bwd').addEventListener('click', function () { skip(-15); });
     document.getElementById('q-dock-fwd').addEventListener('click', function () { skip(15); });
     document.getElementById('q-dock-play').addEventListener('click', togglePlay);
-    document.getElementById('q-dock-prog').addEventListener('input', function (e) {
-      if (audioEl.duration) audioEl.currentTime = (e.target.value / 100) * audioEl.duration;
-    });
+    bindScrub(document.getElementById('q-dock-prog'));
     /* il lettore compatto compare solo quando quello grande è uscito dallo schermo */
     if ('IntersectionObserver' in window) {
       dockObserver = new IntersectionObserver(function (entries) {
@@ -344,11 +472,71 @@
     renderDock();
   }
 
-  function fmtTime(sec) {
-    if (!sec || isNaN(sec)) return '0:00';
-    var m = Math.floor(sec / 60);
-    var s = Math.floor(sec % 60);
-    return m + ':' + (s < 10 ? '0' + s : s);
+  /* Timer di spegnimento: dissolvenza negli ultimi secondi, poi pausa. Parte quando parte l'ascolto. */
+  var FADE_S = 12;
+  var sleepIv = null, fading = false, lastPos = 0;
+
+  function sleepLabel() {
+    var el = document.getElementById('q-sleep-left');
+    if (!el) return;
+    if (!state.sleepMin) { el.textContent = ''; return; }
+    if (!state.sleepEnd) { el.textContent = 'Il timer parte con l’ascolto.'; return; }
+    var left = Math.max(0, Math.round((state.sleepEnd - Date.now()) / 1000));
+    el.textContent = 'Si spegne tra ' + fmtTime(left) + '.';
+  }
+
+  function sleepClear() {
+    clearInterval(sleepIv);
+    sleepIv = null;
+    fading = false;
+  }
+
+  function sleepStartClock() {
+    if (!state.sleepMin || state.sleepEnd) return;
+    state.sleepEnd = Date.now() + state.sleepMin * 60000;
+    sleepClear();
+    sleepIv = setInterval(sleepTick, 1000);
+    sleepLabel();
+  }
+
+  function setSleep(min) {
+    sleepClear();
+    state.sleepMin = min;
+    state.sleepEnd = 0;
+    if (min && (state.playing || state.loading)) sleepStartClock();
+    sleepLabel();
+  }
+
+  function sleepTick() {
+    var left = (state.sleepEnd - Date.now()) / 1000;
+    if (left <= 0) {
+      sleepClear();
+      state.sleepMin = 0; state.sleepEnd = 0;
+      audioEl.pause();
+      audioEl.volume = 1;
+      var sel = document.getElementById('q-sleep-select');
+      if (sel) sel.value = '0';
+      sleepLabel();
+      return;
+    }
+    if (left <= FADE_S && state.playing) {
+      if (!fading) {
+        fading = true;
+        if (audioEl === elRouted && B.Engine) B.Engine.fadeMedia(left);
+      }
+      if (audioEl === elPlain) audioEl.volume = Math.max(0, left / FADE_S);   // su iPhone il volume non si regola: si ferma e basta
+    }
+    sleepLabel();
+  }
+
+  function updatePositionState() {
+    if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+    var now = Date.now();
+    if (now - lastPos < 1000) return;
+    lastPos = now;
+    var d = audioEl.duration;
+    if (!isFinite(d) || d <= 0) return;
+    try { navigator.mediaSession.setPositionState({ duration: d, playbackRate: 1, position: Math.min(d, audioEl.currentTime) }); } catch (e) {}
   }
 
   function wire(el) {
@@ -357,14 +545,26 @@
       if (!mine()) return;
       if (B.Engine) B.Engine.mediaActive(el === elRouted);
       state.playing = true;
+      sleepStartClock();
       syncBackgroundSound(true);
       applyMediaSession();
       renderPlayerCard();
       renderActiveItem();
     });
+    el.addEventListener('playing', function () {
+      if (!mine()) return;
+      state.loading = false;
+      syncTransport();
+    });
+    el.addEventListener('waiting', function () {
+      if (!mine() || !state.playing) return;
+      state.loading = true;
+      syncTransport();
+    });
     el.addEventListener('pause', function () {
       if (!mine()) return;
       state.playing = false;
+      state.loading = false;
       syncBackgroundSound(false);
       if (B.Engine) B.Engine.mediaActive(false);
       renderPlayerCard();
@@ -373,34 +573,43 @@
     el.addEventListener('ended', function () {
       if (!mine()) return;
       state.playing = false;
+      state.loading = false;
       syncBackgroundSound(false);
       if (B.Engine) B.Engine.mediaActive(false);
       renderPlayerCard();
       renderActiveItem();
+      // a fine Sura: ferma, passa alla successiva o ripeti
+      if (state.endMode === 'repeat') {
+        playSurah(state.surah);
+      } else if (state.endMode === 'next') {
+        var nx = neighbour(state.surah, 1);
+        if (nx) playSurah(nx);
+      }
     });
     el.addEventListener('loadedmetadata', function () {
-      if (!mine() || pendingSeek == null) return;
-      try { el.currentTime = pendingSeek; } catch (e) {}
-      pendingSeek = null;
+      if (!mine()) return;
+      if (pendingSeek != null) {
+        try { el.currentTime = pendingSeek; } catch (e) {}
+        pendingSeek = null;
+      }
+      updateProgress();
     });
+    el.addEventListener('durationchange', function () { if (mine()) updateProgress(); });
     el.addEventListener('error', function () {
-      if (el === elRouted && el === audioEl && !routedFailed) {
+      if (!mine()) return;
+      if (!el.getAttribute('src')) return;                  // elemento svuotato da noi (resetMedia): non è un guasto
+      if (el === elRouted && !routedFailed && (state.playing || state.loading)) {
         routedFailed = true;
         playSurah(state.surah);
+        return;
       }
+      state.loading = false;
+      syncTransport();
     });
     el.addEventListener('timeupdate', function () {
       if (!mine()) return;
-      var prog = document.getElementById('q-prog');
-      var cur = document.getElementById('q-time-cur');
-      var dur = document.getElementById('q-time-dur');
-      if (prog && el.duration) {
-        prog.value = (el.currentTime / el.duration) * 100;
-      }
-      if (cur) cur.textContent = fmtTime(el.currentTime);
-      if (dur && el.duration) dur.textContent = fmtTime(el.duration);
-      var dprog = document.getElementById('q-dock-prog');
-      if (dprog && el.duration) dprog.value = (el.currentTime / el.duration) * 100;
+      updateProgress();
+      updatePositionState();
     });
   }
   wire(elPlain);
@@ -417,27 +626,28 @@
       '</div>' +
 
       '<h1>Recitazioni coraniche</h1>' +
-      '<p class="lede">Tradizione <strong>Hafs</strong>, stile <strong>Mujawwad</strong>: recitazione lenta e distensiva, adatta al riposo.</p>' +
+      '<p class="lede">Tradizione <strong>Hafs</strong>: recitazione lenta e distensiva, adatta al riposo.</p>' +
 
-      '<!-- Scelta del Maestro -->' +
+      '<!-- Scelta della voce -->' +
       '<div class="q-reciter-chips" role="radiogroup" aria-label="Seleziona il recitatore">' +
-        '<button type="button" class="chip' + (state.reciter === 'minshawi' ? ' on' : '') + '" data-reciter="minshawi">Al-Minshawi <small>1920–1969</small></button>' +
-        '<button type="button" class="chip' + (state.reciter === 'basit' ? ' on' : '') + '" data-reciter="basit">Abdul Basit <small>1927–1988</small></button>' +
-        '<button type="button" class="chip' + (state.reciter === 'hussary' ? ' on' : '') + '" data-reciter="hussary">Al-Hussary <small>1917–1980</small></button>' +
+        RECITERS.map(function (rid) {
+          var r = D.reciters[rid];
+          return '<button type="button" class="chip' + (state.reciter === rid ? ' on' : '') + '" data-reciter="' + rid + '">' + (r.corto || r.nome) + ' <small>' + (r.sub || r.anni || '') + '</small></button>';
+        }).join('') +
       '</div>' +
 
       '<!-- Player attivo -->' +
       '<div class="panel q-player-card" id="q-player-box"></div>' +
 
       '<!-- Consigliate per la notte -->' +
-      '<h2>⭐ Consigliate per il riposo</h2>' +
-      '<p class="sub">Sure scelte specificamente per la cadenza distensiva, i messaggi di conforto interiore e l\'assenza di picchi acustici improvvisi.</p>' +
+      '<h2 id="q-rec-title">⭐ Consigliate per il riposo</h2>' +
+      '<p class="sub" id="q-rec-sub">Sure scelte specificamente per la cadenza distensiva, i messaggi di conforto interiore e l\'assenza di picchi acustici improvvisi.</p>' +
       '<div class="list" id="q-recommended-list"></div>' +
 
       '<!-- Catalogo Completo 114 Sure -->' +
-      '<h2>📖 Tutte le 114 Sure</h2>' +
-      '<p class="sub">Puoi ascoltare in streaming qualsiasi Sura del Corano. Seleziona una Sura per avviare l\'ascolto immediato o salvarla per l\'uso senza rete.</p>' +
-      '<div class="q-search-box">' +
+      '<h2 id="q-all-title">📖 Tutte le 114 Sure</h2>' +
+      '<p class="sub" id="q-all-sub">Puoi ascoltare in streaming qualsiasi Sura del Corano. Seleziona una Sura per avviare l\'ascolto immediato o salvarla per l\'uso senza rete.</p>' +
+      '<div class="q-search-box" id="q-search-wrap">' +
         '<input type="search" id="q-search-input" placeholder="Cerca Sura per nome, significato o numero (es. Maryam, 55, Il Misericordioso)..." autocomplete="off">' +
       '</div>' +
       '<div class="list" id="q-all-surahs-list"></div>' +
@@ -446,7 +656,7 @@
 
       '<!-- Lettore compatto fisso -->' +
       '<div class="q-dock" id="q-dock" role="group" aria-label="Comandi di ascolto">' +
-        '<input type="range" class="q-dock-prog" id="q-dock-prog" min="0" max="100" step="0.1" value="0" aria-label="Avanzamento audio">' +
+        '<input type="range" class="q-range q-dock-prog" id="q-dock-prog" min="0" max="100" step="0.1" value="0" aria-label="Avanzamento audio" disabled>' +
         '<div class="q-dock-row">' +
           '<div class="q-dock-info"><strong id="q-dock-title"></strong><small id="q-dock-sub"></small></div>' +
           '<button type="button" class="q-dock-btn" id="q-dock-bwd" aria-label="Indietro 15 secondi">' + ICON_BWD + '</button>' +
@@ -464,16 +674,18 @@
       btn.addEventListener('click', function () {
         var rId = btn.getAttribute('data-reciter');
         if (state.reciter === rId) return;
+        var wasPlaying = state.playing || state.loading;
         state.reciter = rId;
+        var keep = isAllowed(rId, state.surah);
+        if (!keep) state.surah = reciterSurahs(rId)[0].n;    // la Sura in corso non esiste con questa voce
         saveSettings();
+        if (!(wasPlaying && keep)) resetMedia();             // se suonava la stessa Sura riparte da sola con la nuova voce
         rChips.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-reciter') === rId); });
         updateCacheIndex();
         renderPlayerCard();
         renderRecommended();
         renderAllSurahs();
-        if (state.playing) {
-          playSurah(state.surah);
-        }
+        if (wasPlaying && keep) playSurah(state.surah);      // se la Sura non esiste con questa voce resta in pausa: non parte mai una Sura che non hai scelto tu
       });
     });
 
@@ -515,20 +727,33 @@
       '</div>' +
 
       '<div class="q-timeline">' +
-        '<input type="range" id="q-prog" min="0" max="100" step="0.1" value="' + (audioEl.duration ? (audioEl.currentTime / audioEl.duration) * 100 : 0) + '" aria-label="Avanzamento audio">' +
+        '<input type="range" class="q-range" id="q-prog" min="0" max="100" step="0.1" value="0" aria-label="Avanzamento audio" disabled>' +
         '<div class="q-time-row">' +
-          '<span id="q-time-cur">' + fmtTime(audioEl.currentTime) + '</span>' +
-          '<span id="q-time-dur">' + fmtTime(audioEl.duration) + '</span>' +
+          '<span id="q-time-cur">0:00</span>' +
+          '<span id="q-time-dur">–:––</span>' +
         '</div>' +
       '</div>' +
 
       '<div class="q-controls">' +
+        '<button type="button" class="q-nav" id="q-prev" aria-label="Sura precedente"' + (neighbour(state.surah, -1) ? '' : ' disabled') + '>' + ICON_PREV + '</button>' +
         '<button type="button" class="q-skip" id="q-bwd" aria-label="Indietro 15 secondi">' + ICON_BWD + '<span>15 s</span></button>' +
-        '<button type="button" class="q-play-btn" id="q-play-toggle" aria-label="' + (state.playing ? 'Pausa' : 'Avvia') + '">' +
-          (state.playing ? ICON_PAUSE : ICON_PLAY).replace(/="30"/g, '="38"') +
-        '</button>' +
+        '<button type="button" class="q-play-btn" id="q-play-toggle" aria-label="Avvia"></button>' +
         '<button type="button" class="q-skip" id="q-fwd" aria-label="Avanti 15 secondi">' + ICON_FWD + '<span>15 s</span></button>' +
+        '<button type="button" class="q-nav" id="q-next" aria-label="Sura successiva"' + (neighbour(state.surah, 1) ? '' : ' disabled') + '>' + ICON_NEXT + '</button>' +
       '</div>' +
+
+      '<div class="q-opts-row">' +
+        '<label>Spegni dopo<select id="q-sleep-select" aria-label="Timer di spegnimento">' +
+          '<option value="0"' + (!state.sleepMin ? ' selected' : '') + '>Mai</option>' +
+          [15, 30, 45, 60, 90].map(function (m) { return '<option value="' + m + '"' + (state.sleepMin === m ? ' selected' : '') + '>' + m + ' minuti</option>'; }).join('') +
+        '</select></label>' +
+        '<label>Alla fine<select id="q-end-select" aria-label="Cosa fare alla fine della Sura">' +
+          '<option value="stop"' + (state.endMode === 'stop' ? ' selected' : '') + '>Fermati</option>' +
+          '<option value="next"' + (state.endMode === 'next' ? ' selected' : '') + '>Prossima Sura</option>' +
+          '<option value="repeat"' + (state.endMode === 'repeat' ? ' selected' : '') + '>Ripeti questa</option>' +
+        '</select></label>' +
+      '</div>' +
+      '<p class="hint q-sleep-left" id="q-sleep-left" role="status" aria-live="off"></p>' +
 
       (state.reciter === 'basit' && !wantRouted()
         ? '<p class="hint q-warn">Questa voce è registrata molto più forte delle altre (fino a 10 dB). Abbassa il volume del telefono prima di avviare.</p>'
@@ -571,9 +796,8 @@
       '</details>';
 
     box.innerHTML = h;
-    renderDock();
+    renderDock();      // aggiorna anche play/pausa e barra della card
 
-    // Event listeners del player
     var btnPlay = document.getElementById('q-play-toggle');
     if (btnPlay) btnPlay.addEventListener('click', togglePlay);
 
@@ -583,17 +807,21 @@
     var btnFwd = document.getElementById('q-fwd');
     if (btnFwd) btnFwd.addEventListener('click', function () { skip(15); });
 
+    var btnPrev = document.getElementById('q-prev');
+    if (btnPrev) btnPrev.addEventListener('click', goPrev);
+    var btnNext = document.getElementById('q-next');
+    if (btnNext) btnNext.addEventListener('click', goNext);
+
+    var sleepSel = document.getElementById('q-sleep-select');
+    if (sleepSel) sleepSel.addEventListener('change', function () { setSleep(parseInt(sleepSel.value, 10)); });
+    var endSel = document.getElementById('q-end-select');
+    if (endSel) endSel.addEventListener('change', function () { state.endMode = endSel.value; saveSettings(); });
+    sleepLabel();
+
     var more = document.getElementById('q-more');
     if (more) more.addEventListener('toggle', function () { state.moreOpen = more.open; });
 
-    var prog = document.getElementById('q-prog');
-    if (prog) {
-      prog.addEventListener('input', function () {
-        if (audioEl.duration) {
-          audioEl.currentTime = (prog.value / 100) * audioEl.duration;
-        }
-      });
-    }
+    bindScrub(document.getElementById('q-prog'));
 
     var bgSel = document.getElementById('q-bg-select');
     if (bgSel) {
@@ -638,8 +866,11 @@
     var list = document.getElementById('q-recommended-list');
     if (!list) return;
 
-    var rec = D.surahs.filter(function (s) { return s.cons; });
+    var rec = reciterSurahs(state.reciter).filter(function (s) { return isRecommended(state.reciter, s); });
     var html = '';
+    var rt = document.getElementById('q-rec-title'), rs = document.getElementById('q-rec-sub');
+    if (rt) rt.hidden = !rec.length;
+    if (rs) rs.hidden = !rec.length;
 
     rec.forEach(function (s) {
       var isCur = state.surah === s.n;
@@ -657,7 +888,7 @@
                 '<small class="sub">' + s.trad + (isSaved ? ' · <span style="color:var(--deep)">✓ Offline</span>' : '') + '</small>' +
               '</div>' +
             '</div>' +
-            (s.nota ? '<p class="q-item-nota">' + s.nota + '</p>' : '') +
+            (surahNote(state.reciter, s) ? '<p class="q-item-nota">' + surahNote(state.reciter, s) + '</p>' : '') +
           '</div>' +
           '<button type="button" class="btn secondary piccolo q-play-item-btn" data-play-surah="' + s.n + '">' +
             (isPl ? 'Pausa' : 'Ascolta') +
@@ -674,7 +905,15 @@
     if (!list) return;
 
     var filter = state.filter;
-    var filtered = D.surahs.filter(function (s) {
+    var all = reciterSurahs(state.reciter);
+    var limited = all.length < D.surahs.length;
+    var at = document.getElementById('q-all-title'), as = document.getElementById('q-all-sub'), sw = document.getElementById('q-search-wrap');
+    if (at) at.textContent = limited ? '📖 Le Sure per questa voce (' + all.length + ')' : '📖 Tutte le 114 Sure';
+    if (as) as.textContent = limited
+      ? 'Con questa voce trovi queste Sure. Selezionane una per avviare l\'ascolto immediato.'
+      : 'Puoi ascoltare in streaming qualsiasi Sura del Corano. Seleziona una Sura per avviare l\'ascolto immediato o salvarla per l\'uso senza rete.';
+    if (sw) sw.hidden = limited && all.length <= 12;
+    var filtered = all.filter(function (s) {
       if (!filter) return true;
       return s.n.toString() === filter ||
              s.nome.toLowerCase().indexOf(filter) >= 0 ||
@@ -773,6 +1012,8 @@
 
   // Esporta interfaccia pubblica
   B.QuranPlayer = {
+    _debugSleep: function (sec) { sleepClear(); state.sleepMin = 1; state.sleepEnd = Date.now() + sec * 1000; sleepIv = setInterval(sleepTick, 1000); sleepLabel(); },
+    _debugState: function () { return { surah: state.surah, playing: state.playing, loading: state.loading, scrub: state.scrub, endMode: state.endMode, fading: fading, sleepMin: state.sleepMin }; },
     _debug: function () { return { audioEl: audioEl === elRouted ? 'routed' : 'plain', routedFailed: routedFailed, master: bgMaster(), gain: levelDb(state.reciter, state.surah) }; },
     init: function () {
       renderView();

@@ -408,19 +408,51 @@ textarea { resize: vertical; margin-bottom: 10px; }
 .q-now-title { font-size: 1.25rem; margin: 0 0 2px; }
 .q-ar { font-size: 1.3rem; margin-left: 8px; font-weight: normal; }
 
-.q-timeline { margin: 14px 0 10px; }
-.q-timeline input[type="range"] {
-  width: 100%; height: 6px; border-radius: 3px; accent-color: var(--deep); cursor: pointer;
-}
-.q-time-row { display: flex; justify-content: space-between; font-size: .82rem; color: var(--ink2); margin-top: 4px; }
+.q-timeline { margin: 10px 0 6px; }
+.q-time-row { display: flex; justify-content: space-between; font-size: .86rem; color: var(--ink2); margin-top: 0; font-variant-numeric: tabular-nums; }
 
-.q-controls { display: flex; align-items: center; justify-content: center; gap: 26px; margin: 14px 0 12px; }
+/* barra di avanzamento: traccia colorata fino al punto raggiunto, area di tocco alta 36 px */
+.q-range {
+  -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 36px; margin: 0; padding: 0;
+  background: transparent; cursor: pointer; --rt: var(--line); --rf: var(--deep); --th: var(--deep);
+}
+.q-range:focus-visible { outline: 2px solid var(--deep); outline-offset: 2px; border-radius: 8px; }
+.q-range:disabled { opacity: .5; cursor: default; }
+.q-range::-webkit-slider-runnable-track {
+  height: 8px; border-radius: 4px;
+  background: linear-gradient(to right, var(--rf) var(--p, 0%), var(--rt) var(--p, 0%));
+}
+.q-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 24px; height: 24px; margin-top: -8px; border-radius: 50%;
+  background: var(--th); border: 3px solid var(--surf); box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.q-range::-moz-range-track { height: 8px; border-radius: 4px; background: var(--rt); }
+.q-range::-moz-range-progress { height: 8px; border-radius: 4px; background: var(--rf); }
+.q-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--th); border: 3px solid var(--surf); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+
+.q-controls { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0 10px; }
 .q-play-btn {
   display: inline-grid; place-items: center; width: 76px; height: 76px; border-radius: 50%;
   background: var(--deep); color: var(--on-deep); border: 0; cursor: pointer;
   box-shadow: 0 4px 14px rgba(45,91,96,.25); transition: transform .15s;
 }
 .q-play-btn:active { transform: scale(.95); }
+.q-nav {
+  display: grid; place-items: center; width: 46px; height: 56px; background: none; border: 0; border-radius: 14px;
+  color: var(--ink2); cursor: pointer;
+}
+.q-nav:active { background: var(--surf2); }
+.q-nav:disabled { opacity: .3; cursor: default; }
+.q-spin { animation: q-turn 1s linear infinite; transform-origin: center; }
+@keyframes q-turn { to { transform: rotate(360deg); } }
+
+.q-opts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 0; }
+.q-opts-row label { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; color: var(--ink2); font-weight: 600; }
+.q-opts-row select {
+  width: 100%; background: var(--surf2); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 10px; font: inherit; font-size: .92rem; font-weight: 400; min-height: 44px;
+}
+.q-sleep-left { margin: 6px 0 0; min-height: 1.3em; font-size: .86rem; }
 .q-skip {
   display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 64px; min-height: 64px;
   justify-content: center; background: none; border: 0; border-radius: 16px; color: var(--ink2);
@@ -444,7 +476,10 @@ textarea { resize: vertical; margin-bottom: 10px; }
   transition: transform .25s, opacity .25s, visibility .25s;
 }
 .q-dock.show { transform: none; opacity: 1; visibility: visible; pointer-events: auto; }
-.q-dock-prog { display: block; width: 100%; height: 22px; margin: 0; accent-color: var(--on-deep); cursor: pointer; background: transparent; }
+.q-dock-prog { height: 28px; --rt: rgba(255,255,255,.3); --rf: var(--on-deep); --th: var(--on-deep); }
+.q-dock-prog::-webkit-slider-thumb { border-color: var(--deep); }
+.q-dock-prog::-moz-range-thumb { border-color: var(--deep); }
+[data-theme="night"] .q-dock-prog { --rt: rgba(0,0,0,.3); }
 .q-dock-row { display: flex; align-items: center; gap: 2px; }
 .q-dock-info { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; padding-left: 8px; }
 .q-dock-info strong { font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

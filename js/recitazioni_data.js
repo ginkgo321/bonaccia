@@ -1,4 +1,7 @@
-/* Bonaccia – Dati recitazioni coraniche: 114 Sure e 3 Maestri egiziani (Hafs Mujawwad). */
+/* Bonaccia – Dati recitazioni coraniche: 114 Sure, 3 maestri egiziani storici (Hafs Mujawwad) e 2 voci più recenti.
+   Campo opzionale «surahs» di un recitatore: se c'è, SOLO quelle Sure sono disponibili con quella voce
+   (non compaiono nell'elenco, nella ricerca, nei tasti precedente/successiva né alla fine di una Sura).
+   Campi «cons» (numeri di Sura) e «note» (testo per numero): consigliate per il riposo solo con quella voce. */
 window.Bonaccia = window.Bonaccia || {};
 window.Bonaccia.QuranData = {
   reciters: {
@@ -6,7 +9,9 @@ window.Bonaccia.QuranData = {
     "id": "basit",
     "nome": "Abdul Basit Abdul Samad",
     "arabo": "عبد الباسط عبد الصمد",
+    "corto": "Abdul Basit",
     "anni": "1927–1988",
+    "sub": "1927–1988",
     "stile": "Mujawwad (studio)",
     "desc": "La «Gola d’Oro». Respiro amplissimo, timbro risonante e maestoso ma calmo nelle registrazioni radiofoniche da studio.",
     "baseUrl": "https://cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r1/"
@@ -15,7 +20,9 @@ window.Bonaccia.QuranData = {
     "id": "minshawi",
     "nome": "Mohamed Siddiq El-Minshawi",
     "arabo": "محمد صديق المنشاوي",
+    "corto": "Al-Minshawi",
     "anni": "1920–1969",
+    "sub": "1920–1969",
     "stile": "Mujawwad (studio)",
     "desc": "La «Voce che piange». Timbro intimo, caldo, vellutato e leggermente malinconico. Celebre per l'effetto distensivo contro l'angoscia.",
     "baseUrl": "https://cdn.mp3quran.net/audio/muhammad-minshawi/r2/"
@@ -24,10 +31,35 @@ window.Bonaccia.QuranData = {
     "id": "hussary",
     "nome": "Mahmoud Khalil Al-Hussary",
     "arabo": "محمود خليل الحصري",
+    "corto": "Al-Hussary",
     "anni": "1917–1980",
+    "sub": "1917–1980",
     "stile": "Mujawwad (studio)",
     "desc": "Il riferimento canonico di Al-Azhar. Dizione purissima, ritmo scandito con precisione millimetrica, serenità e distensione continua.",
     "baseUrl": "https://cdn.mp3quran.net/audio/mahmoud-husary/r2/"
+  },
+  "salimi": {
+    "id": "salimi",
+    "nome": "Mansour Al-Salimi",
+    "arabo": "منصور السالمي",
+    "corto": "Al-Salimi",
+    "sub": "per la notte",
+    "stile": "Hafs",
+    "desc": "Voce calma e molto regolare: nelle misure di Bonaccia la sonorità cambia pochissimo, senza picchi improvvisi e senza pause vuote. Pensata per addormentarsi.",
+    "baseUrl": "https://cdn.mp3quran.net/audio/mansour-salimi/r1/",
+    "cons": [2],
+    "note": { "2": "Dura circa 2 ore e 20 minuti, con un ritmo molto regolare: per addormentarsi, con il timer di spegnimento. Si ascolta solo in streaming (il file pesa 269 MB)." }
+  },
+  "afasy": {
+    "id": "afasy",
+    "nome": "Mishary Rashid Al-Afasy",
+    "arabo": "مشاري راشد العفاسي",
+    "corto": "Al-Afasy",
+    "sub": "ogni giorno",
+    "stile": "Hafs",
+    "desc": "Voce chiara e luminosa, per l'ascolto di ogni giorno. Con questa voce trovi 11 Sure scelte: brevi e di sollievo, protezioni quotidiane e racconti.",
+    "baseUrl": "https://cdn.mp3quran.net/audio/mishary-alafasy/r1/",
+    "surahs": [1, 12, 19, 31, 93, 94, 95, 108, 112, 113, 114]
   }
 },
   surahs: [

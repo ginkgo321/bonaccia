@@ -24,7 +24,8 @@ USCITA = RADICE / "js" / "recitazioni_livelli.js"
 def leggi_dati():
     js = ("global.window={};require('./js/recitazioni_data.js');const D=window.Bonaccia.QuranData;"
           "console.log(JSON.stringify({r:Object.fromEntries(Object.entries(D.reciters).map(([k,v])=>[k,v.baseUrl])),"
-          "s:D.surahs.map(s=>[s.n,s.pad])}))")
+          "s:D.surahs.map(s=>[s.n,s.pad]),"
+          "ok:Object.fromEntries(Object.entries(D.reciters).map(([k,v])=>[k,v.surahs||null]))}))")
     out = subprocess.run(["node", "-e", js], cwd=RADICE, capture_output=True, text=True, check=True).stdout
     return json.loads(out)
 
@@ -49,6 +50,8 @@ def main():
     lavori = []
     for rid, base in dati["r"].items():
         for n, pad in dati["s"]:
+            if dati["ok"].get(rid) and n not in dati["ok"][rid]:
+                continue          # selezione protetta: si misurano solo le Sure disponibili
             chiave = f"{rid}/{n}"
             if cache.get(chiave) is None:
                 lavori.append((chiave, base + pad + ".mp3"))
@@ -77,18 +80,20 @@ def main():
 
     gain, mediane = {}, {}
     for rid in dati["r"]:
-        vals = [cache.get(f"{rid}/{n}") for n, _ in dati["s"]]
+        sure = [(n, p) for n, p in dati["s"] if not dati["ok"].get(rid) or n in dati["ok"][rid]]
+        vals = [cache.get(f"{rid}/{n}") for n, _ in sure]
         buoni = sorted(v for v in vals if v is not None)
         mediane[rid] = buoni[len(buoni) // 2] if buoni else a.obiettivo
         riga = {}
-        for (n, _), v in zip(dati["s"], vals):
+        for (n, _), v in zip(sure, vals):
             if v is None:
                 continue
             g = max(-18.0, min(6.0, a.obiettivo - v))
             riga[n] = round(g * 2) / 2
         gain[rid] = riga
     pred = {rid: round(max(-18.0, min(6.0, a.obiettivo - m)) * 2) / 2 for rid, m in mediane.items()}
-    mancanti = sum(1 for rid in dati["r"] for n, _ in dati["s"] if cache.get(f"{rid}/{n}") is None)
+    mancanti = sum(1 for rid in dati["r"] for n, _ in dati["s"]
+                   if (not dati["ok"].get(rid) or n in dati["ok"][rid]) and cache.get(f"{rid}/{n}") is None)
 
     corpo = json.dumps({"obiettivo": a.obiettivo, "predefinito": pred, "gain": gain}, separators=(",", ":"))
     USCITA.write_text(
