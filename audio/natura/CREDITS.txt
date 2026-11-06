@@ -10,8 +10,10 @@ natura_mare.mp3      Freesound 578524   "Calm ocean waves"                      
 natura_fiume.mp3     Freesound 730149   "Saliouse river murmur 17"                            CC0
 natura_fontana.mp3   Freesound 460559   "fountain ambience 2, courtyard abbey gardens"        CC0
 natura_bosco.mp3     Freesound 844605   "Morning Forest with Birds"                           CC0
+natura_drone.mp3      Freesound 636566   "Sleepwalkingdrone1" (Jim-Bretherick)                  CC0
 
-Scelte dalla lista dei suoni della natura di GET Through - Original (docs/audio.md), tenendo solo quelle con
+Il suono lungo (drone) viene da una ricerca di musica ambient libera; è l'intero brano di 80 secondi.
+Le altre sono state scelte dalla lista dei suoni della natura di GET Through - Original (docs/audio.md), tenendo solo quelle con
 licenza CC0 e poco contenuto acuto (la pioggia in giardino, 575378, è più sibilante e non è stata inclusa).
 Non ascoltate dall'autore del progetto: scelte da misure (livello, regolarità, quota di acuti).
 

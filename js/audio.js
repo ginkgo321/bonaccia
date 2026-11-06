@@ -311,6 +311,10 @@
   }
 
   var REAL_TRIM = 2.6;
+  /* Correzione per registrazione (dB), per portarle tutte allo stesso livello (circa -19,5 LUFS misurati
+     sui file in audio/natura, vedi docs/analisi_suoni.md): il fiume era 3 dB sopra, la fontana 2, il bosco 2 sotto. */
+  var REAL_ADJ_DB = { stream: -2.9, fontana: -1.8, bosco: 2.3 };
+  function realTrim(n) { return REAL_TRIM * dbToGain(REAL_ADJ_DB[n] || 0); }
   function buildAll(ctx) {
     var B = {
       white: genNoise(ctx, 'white', 8), pink: genNoise(ctx, 'pink', 8), brown: genNoise(ctx, 'brown', 8),
@@ -326,10 +330,11 @@
       noise: buildNoise(ctx, B),
       waves: makeSourced(ctx, waves, waves.trim, REAL_TRIM),
       rain: makeSourced(ctx, rainSynth, rainSynth.trim, REAL_TRIM),
-      stream: makeSourced(ctx, stream, stream.trim, REAL_TRIM),
+      stream: makeSourced(ctx, stream, stream.trim, realTrim('stream')),
       wind: buildWind(ctx, B), chimes: buildChimes(ctx, B),
-      fontana: makeSourced(ctx, null, 1, REAL_TRIM),
-      bosco: makeSourced(ctx, null, 1, REAL_TRIM),
+      fontana: makeSourced(ctx, null, 1, realTrim('fontana')),
+      bosco: makeSourced(ctx, null, 1, realTrim('bosco')),
+      drone: makeSourced(ctx, null, 1, realTrim('drone')),
       buffers: B
     };
   }
@@ -344,10 +349,11 @@
     wind:   { on: false, vol: 0.7 },
     chimes: { on: false, vol: 0.5, density: 0.5 },
     fontana: { on: false, vol: 0.7 },
-    bosco:  { on: false, vol: 0.7 }
+    bosco:  { on: false, vol: 0.7 },
+    drone:  { on: false, vol: 0.7 }
   };
-  var LAYER_NAMES = ['noise', 'waves', 'rain', 'stream', 'wind', 'chimes', 'fontana', 'bosco'];
-  var REAL_FILES = { rain: 'pioggia', waves: 'mare', stream: 'fiume', fontana: 'fontana', bosco: 'bosco' };
+  var LAYER_NAMES = ['noise', 'waves', 'rain', 'stream', 'wind', 'chimes', 'fontana', 'bosco', 'drone'];
+  var REAL_FILES = { rain: 'pioggia', waves: 'mare', stream: 'fiume', fontana: 'fontana', bosco: 'bosco', drone: 'drone' };
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -427,7 +433,7 @@
       this._media();
       var self = this;
       setTimeout(function () {
-        if (!self.playing && !self.voiceActive) {
+        if (!self.playing && !self.voiceActive && !self.extActive) {
           if (!self.cueOn) { try { self.ctx.suspend(); } catch (e) {} }
           self._keepAlive(false);
         }
@@ -436,6 +442,40 @@
     },
 
     toggle: function () { if (this.playing) this.stop(1.5); else this.start(2); },
+
+    /* ---- audio esterno (le recitazioni): passa dal motore per poterne regolare il livello ----
+       Il percorso ha un guadagno proprio (setMediaGainDb) e un limitatore a -3 dB, separato dai suoni di sottofondo. */
+    extActive: false,
+    attachMedia: function (el) {
+      if (!this.ensure()) return false;
+      var ctx = this.ctx;
+      if (!this.vgain) {
+        this.vgain = ctx.createGain(); this.vgain.gain.value = 1;
+        this.vlimit = ctx.createDynamicsCompressor();
+        this.vlimit.threshold.value = -3; this.vlimit.knee.value = 0; this.vlimit.ratio.value = 20;
+        this.vlimit.attack.value = 0.002; this.vlimit.release.value = 0.2;
+        this.vanalyser = ctx.createAnalyser(); this.vanalyser.fftSize = 2048;
+        this.vgain.connect(this.vlimit); this.vlimit.connect(ctx.destination); this.vlimit.connect(this.vanalyser);
+      }
+      if (!el._bonSrc) {
+        try { el._bonSrc = ctx.createMediaElementSource(el); el._bonSrc.connect(this.vgain); } catch (e) { return false; }
+      }
+      return true;
+    },
+    setMediaGainDb: function (db, immediate) {
+      if (!this.vgain) return;
+      var g = this.vgain.gain, t = this.ctx.currentTime;
+      g.cancelScheduledValues(t);
+      if (immediate) g.setValueAtTime(dbToGain(db), t); else g.setTargetAtTime(dbToGain(db), t, 0.05);
+    },
+    mediaActive: function (on) {
+      this.extActive = !!on;
+      if (on) { this.ensure(); return; }
+      var self = this;
+      setTimeout(function () {
+        if (self.ctx && !self.extActive && !self.playing && !self.voiceActive && !self.cueOn) { try { self.ctx.suspend(); } catch (e) {} }
+      }, 300);
+    },
 
     setMaster: function (v) {
       this.masterV = Math.max(0, Math.min(1, v));

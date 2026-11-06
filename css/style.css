@@ -476,6 +476,12 @@ textarea { resize: vertical; margin-bottom: 10px; }
   width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line);
   background: var(--surf); color: var(--ink); font-size: 1rem;
 }
+.q-level-row { margin: .8rem 0 .2rem; }
+.q-level-row small { font-size: .84rem; line-height: 1.35; margin-top: 2px; }
+.q-warn { color: var(--warn); margin: .2rem 0 .6rem; }
+.q-mix-slider-row small { flex: none; }
+#q-bg-rel-o { display: block; margin-top: 4px; }
+
 /* righe delle Sure */
 .q-item {
   display: flex; align-items: center; gap: 12px; cursor: pointer;

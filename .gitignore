@@ -7,6 +7,7 @@ tools/voce/grezzo/
 tools/voce/elaborato/
 tools/voce/ultimo_giro.log
 tools/voce/registro.json
+tools/livelli_cache.json
 
 # appunti di ricerca
 suoni.txt

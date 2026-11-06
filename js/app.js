@@ -218,7 +218,7 @@
   function buildPresets() {
     var box = $('#presets'); box.innerHTML = '';
     var synth = E.source === 'synth';
-    ['natura', 'rumore'].forEach(function (g) {
+    ['natura', 'musica', 'rumore'].forEach(function (g) {
       var list = C.presets.filter(function (p) { return p.group === g && !(synth && p.realOnly); });
       if (!list.length) return;
       var target = box;
@@ -248,7 +248,7 @@
   /* mixer */
   function buildMixer() {
     var box = $('#mixer'); box.innerHTML = '';
-    ['rain', 'waves', 'stream', 'fontana', 'bosco', 'wind', 'chimes', 'noise'].forEach(function (n) {
+    ['rain', 'waves', 'stream', 'fontana', 'bosco', 'drone', 'wind', 'chimes', 'noise'].forEach(function (n) {
       var label = C.layerLabels[n];
       var row = h('div', { class: 'mix-row', 'data-layer': n });
       var sw = h('label', { class: 'switch' }, [
@@ -301,7 +301,7 @@
   function syncMixer() {
     $$('.mix-row').forEach(function (row) {
       var n = row.getAttribute('data-layer'), st = E.layerState[n];
-      row.hidden = E.source === 'synth' && (n === 'fontana' || n === 'bosco');
+      row.hidden = E.source === 'synth' && (n === 'fontana' || n === 'bosco' || n === 'drone');
       var on = $('[data-k="on"]', row); if (on !== document.activeElement) on.checked = !!st.on;
       $('.mix-extra', row).hidden = !st.on;
       $$('[data-k]', row).forEach(function (el) {
@@ -425,14 +425,14 @@
     $$('#presets .preset').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-id') === S.current)); });
     $$('#src-seg button').forEach(function (b) { b.setAttribute('aria-checked', String(b.getAttribute('data-src') === E.source)); });
     var loading = false, failed = false;
-    ['rain', 'waves', 'stream', 'fontana', 'bosco'].forEach(function (n) {
+    ['rain', 'waves', 'stream', 'fontana', 'bosco', 'drone'].forEach(function (n) {
       if (!E.layerState[n].on || E.source !== 'real') return;
       var st = E.realStatus(n); if (st === 'loading') loading = true; if (st === 'error') failed = true;
     });
     $('#src-hint').textContent = failed ? 'Non riesco a caricare le registrazioni: per ora suonano quelle sintetiche. Serve la rete la prima volta.'
       : loading ? 'Sto caricando la registrazione… intanto suona la versione sintetica.' : '';
     syncMixer(); renderTimer();
-    var showMini = E.playing && currentView !== 'suoni' && currentView !== 'recitazioni' && $('#night').hidden;
+    var showMini = E.playing && currentView !== 'suoni' && currentView !== 'recitazioni' && !B._quranBgActive && $('#night').hidden;
     miniEl.hidden = !showMini;
     $('#mini-title').textContent = title || '';
     var left = E.timerLeft(); $('#mini-sub').textContent = E.timer && left != null ? 'Timer: ' + fmtLeft(left) : '';

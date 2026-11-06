@@ -10,15 +10,27 @@
   if (!D) return;
 
   var CACHE_NAME = 'bonaccia-recitazioni-v1';
-  var audioEl = new Audio();
-  audioEl.preload = 'none';
+
+  /* Due elementi audio. Quello «con livelli» passa dal motore di Bonaccia (js/audio.js), che applica un guadagno
+     per voce e per Sura (js/recitazioni_livelli.js) e un limitatore: porta tutte le registrazioni allo stesso livello.
+     Quello «semplice» è un normale <audio>, usato se i livelli sono spenti o se il percorso con livelli non funziona. */
+  var elPlain = new Audio();
+  elPlain.preload = 'none';
+  var elRouted = new Audio();
+  elRouted.preload = 'none';
+  elRouted.crossOrigin = 'anonymous';
+  var audioEl = elPlain;
+  var routedFailed = false;
+  var pendingSeek = null;
+  var LV = B.QuranLevels || null;
 
   var state = {
     reciter: 'minshawi', // 'basit' | 'minshawi' | 'hussary'
     surah: 55,           // default: Ar-Rahman
     playing: false,
     bgPreset: 'nessuno', // 'nessuno' | 'pioggia' | 'vento' | 'onde' | 'ruscello'
-    bgVol: 0.15,
+    bgRel: -12,          // sottofondo: dB sotto il livello della voce
+    leveling: true,      // pareggia il volume delle voci
     cachedUrls: {},      // url -> true
     filter: '',
     downloading: null,   // url currently downloading
@@ -33,7 +45,8 @@
       if (parsed.reciter && D.reciters[parsed.reciter]) state.reciter = parsed.reciter;
       if (parsed.surah) state.surah = parsed.surah;
       if (parsed.bgPreset) state.bgPreset = parsed.bgPreset;
-      if (typeof parsed.bgVol === 'number') state.bgVol = parsed.bgVol;
+      if (typeof parsed.bgRel === 'number') state.bgRel = Math.max(-24, Math.min(-4, parsed.bgRel));
+      if (typeof parsed.leveling === 'boolean') state.leveling = parsed.leveling;
     }
   } catch (e) {}
 
@@ -43,7 +56,8 @@
         reciter: state.reciter,
         surah: state.surah,
         bgPreset: state.bgPreset,
-        bgVol: state.bgVol
+        bgRel: state.bgRel,
+        leveling: state.leveling
       }));
     } catch (e) {}
   }
@@ -132,58 +146,140 @@
     }
   }
 
+  /* Livelli */
+  function levelDb(rid, n) {
+    if (!LV) return 0;
+    var g = LV.gain && LV.gain[rid] && LV.gain[rid][n];
+    if (typeof g === 'number') return g;
+    return (LV.predefinito && LV.predefinito[rid]) || 0;
+  }
+
+  function wantRouted() {
+    return state.leveling && !routedFailed && !!LV && !!B.Engine && B.Engine.supported;
+  }
+
+  function pickElement() {
+    var next = elPlain;
+    if (wantRouted()) {
+      if (B.Engine.attachMedia(elRouted)) next = elRouted; else routedFailed = true;
+    }
+    if (next !== audioEl) {
+      var old = audioEl;
+      audioEl = next;       // da qui gli eventi del vecchio elemento vengono ignorati
+      try { old.pause(); } catch (e) {}
+    }
+  }
+
+  function applyLevel(immediate) {
+    if (audioEl === elRouted && B.Engine) B.Engine.setMediaGainDb(levelDb(state.reciter, state.surah), immediate);
+  }
+
   /* Gestione audio e mix */
+  /* Livello (LUFS) di ogni atmosfera con il volume generale a 0 dB: calcolato dai guadagni del motore e corretto
+     con una misura del livello in uscita in Chrome (vedi docs/analisi_suoni.md). Serve a tenere il sottofondo a una distanza fissa dalla voce. */
+  var BG_REF = { pioggia: -13.6, onde: -13.0, ruscello: -15.9, vento: -16.9 };   // tarati con una misura in Chrome (RMS in uscita)
+
+  function bgMaster() {
+    var ref = BG_REF[state.bgPreset] != null ? BG_REF[state.bgPreset] : -15;
+    var target = (LV ? LV.obiettivo : -18) + state.bgRel;      // LUFS voluti per il sottofondo
+    var db = target - ref;                                       // volume generale in dB
+    return Math.max(0.02, Math.min(1, (db + 54) / 51));          // inverso di masterCurve in audio.js
+  }
+
+  function presetFor(id) {
+    var list = (B.Content && B.Content.presets) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  var bgSaved = null;       // mix e volume che aveva l'utente prima del sottofondo
+  var restoreTimer = null;
+
+  function restoreEngine() {
+    restoreTimer = null;
+    var E = B.Engine;
+    if (!bgSaved || !E || B._quranBgActive || E.playing) return;
+    E.setLayers(bgSaved.layers);
+    E.setMaster(bgSaved.master);
+    bgSaved = null;
+  }
+
   function syncBackgroundSound(start) {
-    if (!B.Engine) return;
+    var E = B.Engine;
+    if (!E) return;
     if (state.bgPreset === 'nessuno' || !start) {
-      // Se avevamo avviato noi un sottofondo, possiamo attenuarlo
       if (B._quranBgActive) {
         B._quranBgActive = false;
-        if (B.Engine.playing) B.Engine.stop();
+        E.stop(1.5);
+        // il mix dell'utente torna al suo posto a dissolvenza finita
+        clearTimeout(restoreTimer);
+        restoreTimer = setTimeout(restoreEngine, 1800);
       }
       return;
     }
-
-    // Avvia sottofondo morbido al volume scelto
-    B._quranBgActive = true;
-    B.Engine.applyPreset(state.bgPreset);
-    B.Engine.setMaster(state.bgVol);
-    if (!B.Engine.playing) B.Engine.start();
+    var p = presetFor(state.bgPreset);
+    if (!p) return;
+    if (!B._quranBgActive) {
+      if (E.playing) return;   // sta già ascoltando un suo suono: non lo tocco
+      B._quranBgActive = true;
+    }
+    clearTimeout(restoreTimer);
+    if (!bgSaved) bgSaved = { layers: JSON.parse(JSON.stringify(E.layerState)), master: E.masterV };
+    E.setLayers(p.layers);
+    E.setMaster(bgMaster());
+    if (!E.playing) E.start(2);
   }
 
-  function playSurah(n) {
-    var s = getSurah(n);
-    state.surah = n;
-    saveSettings();
-
-    var url = getAudioUrl(state.reciter, s.pad);
-    if (audioEl.src !== url) {
-      audioEl.src = url;
-    }
-
+  function applyMediaSession(s) {
+    if (!('mediaSession' in navigator)) return;
+    s = s || getSurah(state.surah);
     var r = D.reciters[state.reciter];
-    if ('mediaSession' in navigator) {
+    try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: s.n + '. ' + s.nome + ' (' + s.trad + ') - ' + s.ar,
         artist: r.nome + ' (Mujawwad - Hafs)',
         album: 'Recitazioni Coraniche - Bonaccia'
       });
-      navigator.mediaSession.setActionHandler('play', function () { audioEl.play(); });
+      navigator.mediaSession.setActionHandler('play', function () { playSurah(state.surah); });
       navigator.mediaSession.setActionHandler('pause', function () { audioEl.pause(); });
       navigator.mediaSession.setActionHandler('seekbackward', function () { skip(-15); });
       navigator.mediaSession.setActionHandler('seekforward', function () { skip(15); });
-    }
+    } catch (e) {}
+  }
 
-    audioEl.play().then(function () {
-      state.playing = true;
-      syncBackgroundSound(true);
-      renderPlayerCard();
-      renderActiveItem();
-    }).catch(function (err) {
-      state.playing = false;
-      renderPlayerCard();
-      alert('Non è stato possibile avviare la recitazione. Controlla la connessione.');
-    });
+  function playSurah(n, seekTo) {
+    var s = getSurah(n);
+    state.surah = n;
+    saveSettings();
+
+    pickElement();
+    var url = getAudioUrl(state.reciter, s.pad);
+    if (audioEl.src !== url) {
+      audioEl.src = url;
+    }
+    if (typeof seekTo === 'number') pendingSeek = seekTo;
+    applyLevel(true);
+    applyMediaSession(s);
+
+    var p = audioEl.play();
+    if (p && p.then) {
+      p.then(function () {
+        state.playing = true;
+        syncBackgroundSound(true);
+        applyMediaSession(s);
+        renderPlayerCard();
+        renderActiveItem();
+      }).catch(function () {
+        if (audioEl === elRouted && !routedFailed) {   // il percorso con livelli non parte: si ripiega sull'audio semplice
+          routedFailed = true;
+          playSurah(n, seekTo);
+          return;
+        }
+        state.playing = false;
+        renderPlayerCard();
+        alert('Non è stato possibile avviare la recitazione. Controlla la connessione.');
+      });
+    }
   }
 
   function togglePlay() {
@@ -255,39 +351,60 @@
     return m + ':' + (s < 10 ? '0' + s : s);
   }
 
-  audioEl.addEventListener('play', function () {
-    state.playing = true;
-    syncBackgroundSound(true);
-    renderPlayerCard();
-    renderActiveItem();
-  });
-
-  audioEl.addEventListener('pause', function () {
-    state.playing = false;
-    syncBackgroundSound(false);
-    renderPlayerCard();
-    renderActiveItem();
-  });
-
-  audioEl.addEventListener('ended', function () {
-    state.playing = false;
-    syncBackgroundSound(false);
-    renderPlayerCard();
-    renderActiveItem();
-  });
-
-  audioEl.addEventListener('timeupdate', function () {
-    var prog = document.getElementById('q-prog');
-    var cur = document.getElementById('q-time-cur');
-    var dur = document.getElementById('q-time-dur');
-    if (prog && audioEl.duration) {
-      prog.value = (audioEl.currentTime / audioEl.duration) * 100;
-    }
-    if (cur) cur.textContent = fmtTime(audioEl.currentTime);
-    if (dur && audioEl.duration) dur.textContent = fmtTime(audioEl.duration);
-    var dprog = document.getElementById('q-dock-prog');
-    if (dprog && audioEl.duration) dprog.value = (audioEl.currentTime / audioEl.duration) * 100;
-  });
+  function wire(el) {
+    function mine() { return el === audioEl; }
+    el.addEventListener('play', function () {
+      if (!mine()) return;
+      if (B.Engine) B.Engine.mediaActive(el === elRouted);
+      state.playing = true;
+      syncBackgroundSound(true);
+      applyMediaSession();
+      renderPlayerCard();
+      renderActiveItem();
+    });
+    el.addEventListener('pause', function () {
+      if (!mine()) return;
+      state.playing = false;
+      syncBackgroundSound(false);
+      if (B.Engine) B.Engine.mediaActive(false);
+      renderPlayerCard();
+      renderActiveItem();
+    });
+    el.addEventListener('ended', function () {
+      if (!mine()) return;
+      state.playing = false;
+      syncBackgroundSound(false);
+      if (B.Engine) B.Engine.mediaActive(false);
+      renderPlayerCard();
+      renderActiveItem();
+    });
+    el.addEventListener('loadedmetadata', function () {
+      if (!mine() || pendingSeek == null) return;
+      try { el.currentTime = pendingSeek; } catch (e) {}
+      pendingSeek = null;
+    });
+    el.addEventListener('error', function () {
+      if (el === elRouted && el === audioEl && !routedFailed) {
+        routedFailed = true;
+        playSurah(state.surah);
+      }
+    });
+    el.addEventListener('timeupdate', function () {
+      if (!mine()) return;
+      var prog = document.getElementById('q-prog');
+      var cur = document.getElementById('q-time-cur');
+      var dur = document.getElementById('q-time-dur');
+      if (prog && el.duration) {
+        prog.value = (el.currentTime / el.duration) * 100;
+      }
+      if (cur) cur.textContent = fmtTime(el.currentTime);
+      if (dur && el.duration) dur.textContent = fmtTime(el.duration);
+      var dprog = document.getElementById('q-dock-prog');
+      if (dprog && el.duration) dprog.value = (el.currentTime / el.duration) * 100;
+    });
+  }
+  wire(elPlain);
+  wire(elRouted);
 
   /* Rendering dell'interfaccia */
   function renderView() {
@@ -413,6 +530,10 @@
         '<button type="button" class="q-skip" id="q-fwd" aria-label="Avanti 15 secondi">' + ICON_FWD + '<span>15 s</span></button>' +
       '</div>' +
 
+      (state.reciter === 'basit' && !wantRouted()
+        ? '<p class="hint q-warn">Questa voce è registrata molto più forte delle altre (fino a 10 dB). Abbassa il volume del telefono prima di avviare.</p>'
+        : '') +
+
       '<details class="q-more" id="q-more"' + (state.moreOpen ? ' open' : '') + '>' +
         '<summary>Sulla voce, sottofondo e offline' + (state.bgPreset !== 'nessuno' ? ' <small class="tenue">· ' + state.bgPreset + '</small>' : '') + (isSaved ? ' <small class="tenue">· salvata</small>' : '') + '</summary>' +
         '<p class="sub q-reciter-desc">' + r.desc + '</p>' +
@@ -430,11 +551,16 @@
           '</div>' +
           (state.bgPreset !== 'nessuno'
             ? '<div class="q-mix-slider-row">' +
-                '<small class="tenue">Livello sottofondo:</small>' +
-                '<input type="range" id="q-bg-vol" min="0.05" max="0.4" step="0.02" value="' + state.bgVol + '" aria-label="Volume sottofondo">' +
-              '</div>'
+                '<small class="tenue">Più lontano</small>' +
+                '<input type="range" id="q-bg-rel" min="-24" max="-4" step="1" value="' + state.bgRel + '" aria-label="Quanto è presente il sottofondo rispetto alla voce" aria-describedby="q-bg-rel-o">' +
+                '<small class="tenue">Più vicino</small>' +
+              '</div>' +
+              '<small class="tenue" id="q-bg-rel-o">' + (-state.bgRel) + ' dB sotto la voce</small>'
             : '') +
         '</div>' +
+
+        '<label class="check q-level-row"><input type="checkbox" id="q-level"' + (state.leveling ? ' checked' : '') + (LV ? '' : ' disabled') + '> ' +
+          '<span>Pareggia il volume delle voci<small class="tenue" style="display:block">Porta tutte le Sure e le tre voci allo stesso livello, vicino a quello dei suoni di Bonaccia. Se la riproduzione a schermo bloccato si interrompe, spegnilo.</small></span></label>' +
 
         '<div class="q-offline-row">' +
           '<button type="button" class="btn secondary piccolo q-btn-offline" id="q-offline-btn"' + (isDownloading ? ' disabled' : '') + '>' +
@@ -479,14 +605,24 @@
       });
     }
 
-    var bgVol = document.getElementById('q-bg-vol');
-    if (bgVol) {
-      bgVol.addEventListener('input', function () {
-        state.bgVol = parseFloat(bgVol.value);
+    var bgRel = document.getElementById('q-bg-rel');
+    if (bgRel) {
+      bgRel.addEventListener('input', function () {
+        state.bgRel = parseInt(bgRel.value, 10);
         saveSettings();
-        if (B.Engine && B._quranBgActive) {
-          B.Engine.setMaster(state.bgVol);
-        }
+        var o = document.getElementById('q-bg-rel-o');
+        if (o) o.textContent = (-state.bgRel) + ' dB sotto la voce';
+        if (B.Engine && B._quranBgActive) B.Engine.setMaster(bgMaster());
+      });
+    }
+
+    var lvl = document.getElementById('q-level');
+    if (lvl) {
+      lvl.addEventListener('change', function () {
+        state.leveling = lvl.checked;
+        saveSettings();
+        var wasPlaying = state.playing, t = audioEl.currentTime;
+        if (wasPlaying) playSurah(state.surah, t); else { pickElement(); renderPlayerCard(); }
       });
     }
 
@@ -637,6 +773,7 @@
 
   // Esporta interfaccia pubblica
   B.QuranPlayer = {
+    _debug: function () { return { audioEl: audioEl === elRouted ? 'routed' : 'plain', routedFailed: routedFailed, master: bgMaster(), gain: levelDb(state.reciter, state.surah) }; },
     init: function () {
       renderView();
     },

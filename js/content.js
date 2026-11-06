@@ -11,8 +11,10 @@ window.Bonaccia.Content = {
       layers: { stream: { on: true, vol: 0.8 }, chimes: { on: true, vol: 0.4, density: 0.35 } } },
     { id: 'bosco', group: 'natura', realOnly: true, name: 'Bosco al mattino', desc: 'Aria, foglie e uccelli lontani.',
       layers: { bosco: { on: true, vol: 0.8 } } },
-    { id: 'fontana', group: 'natura', realOnly: true, name: 'Fontana in un cortile', desc: 'Acqua che cade, con l’eco di un cortile.',
+    { id: 'fontana', group: 'natura', realOnly: true, name: 'Fontana in un cortile', desc: 'Acqua che cade, con l’eco di un cortile. È il suono più chiaro e brillante: se ti fa salire il fruscio, scegline uno più scuro.',
       layers: { fontana: { on: true, vol: 0.8 } } },
+    { id: 'drone', group: 'musica', realOnly: true, name: 'Suono lungo e fermo', desc: 'Un tappeto grave e continuo, quasi senza variazioni. Provalo a volume molto basso: è un suono con una nota, non un fruscio.',
+      layers: { drone: { on: true, vol: 0.8 } } },
     { id: 'vento', group: 'natura', name: 'Vento tra gli alberi', desc: 'Un soffio lento, con un filo di ruscello.',
       layers: { wind: { on: true, vol: 0.8 }, stream: { on: true, vol: 0.18 } } },
     { id: 'notte', group: 'natura', name: 'Notte', desc: 'Mare lento con un soffio di vento. Pensato per addormentarsi.',
@@ -23,11 +25,11 @@ window.Bonaccia.Content = {
       layers: { noise: { on: true, vol: 0.85, color: 'brown', tilt: -0.1, breath: true } } }
   ],
 
-  presetGroups: { natura: 'Natura', rumore: 'Rumori' },
+  presetGroups: { natura: 'Natura', musica: 'Suono continuo', rumore: 'Rumori' },
 
   layerLabels: {
     noise: 'Fruscio', waves: 'Onde', rain: 'Pioggia', stream: 'Ruscello', wind: 'Vento', chimes: 'Campanelli',
-    fontana: 'Fontana', bosco: 'Bosco'
+    fontana: 'Fontana', bosco: 'Bosco', drone: 'Suono lungo'
   },
 
   checklist: [
@@ -204,7 +206,7 @@ window.Bonaccia.Content = {
     },
     {
       id: 'suoni', title: 'Da dove vengono i suoni e la voce',
-      html: '<ul><li><strong>Pioggia, mare, fiume, fontana, bosco:</strong> sono registrazioni vere, con licenza libera (CC0), prese da Freesound.org e preparate per questo uso: una finestra di un minuto, livello uniforme, picchi limitati. Gli autori si trovano su Freesound con questi numeri: 392304 (pioggia), 578524 (mare), 730149 (fiume), 460559 (fontana), 844605 (bosco).</li><li><strong>Rumori, vento e campanelli:</strong> li genera il telefono sul momento, quindi non pesano e funzionano senza rete. Se vuoi, puoi scegliere «Sintetici» per usare solo quelli.</li><li><strong>Voce guida:</strong> è una voce di sintesi vocale (Gemini), rallentata e addolcita, che legge i testi degli esercizi. Non è la registrazione di una persona.</li></ul>'
+      html: '<ul><li><strong>Pioggia, mare, fiume, fontana, bosco, suono lungo:</strong> sono registrazioni vere, con licenza libera (CC0), prese da Freesound.org e preparate per questo uso: una finestra di un minuto, livello uniforme, picchi limitati. Gli autori si trovano su Freesound con questi numeri: 392304 (pioggia), 578524 (mare), 730149 (fiume), 460559 (fontana), 844605 (bosco), 636566 (suono lungo).</li><li><strong>Rumori, vento e campanelli:</strong> li genera il telefono sul momento, quindi non pesano e funzionano senza rete. Se vuoi, puoi scegliere «Sintetici» per usare solo quelli.</li><li><strong>Voce guida:</strong> è una voce di sintesi vocale (Gemini), rallentata e addolcita, che legge i testi degli esercizi. Non è la registrazione di una persona.</li></ul>'
     },
     {
       id: 'fonti', title: 'Fonti',

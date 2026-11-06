@@ -20,6 +20,7 @@ LOOP = [
     (730149, "fiume", 82, 60),      # fiume che mormora
     (460559, "fontana", 0, 60),     # fontana in un cortile
     (844605, "bosco", 98, 60),      # bosco al mattino con uccelli
+    (636566, "drone", 0, 80),       # drone lento e regolare (Jim-Bretherick, CC0): tutto il brano
 ]
 TARGET = -19.0
 
@@ -39,7 +40,10 @@ def stats(x):
 def main():
     src, out = sys.argv[1], sys.argv[2]
     os.makedirs(out, exist_ok=True)
+    solo = sys.argv[3:]
     for sid, nome, ss, t in LOOP:
+        if solo and nome not in solo:
+            continue
         f = os.path.join(src, f"{sid}_preview_hq.mp3")
         x = pcm(f, ss, t)
         rms, pk = stats(x)
