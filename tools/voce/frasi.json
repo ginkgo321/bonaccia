@@ -1,0 +1,499 @@
+[
+ {
+  "name": "spalle_01",
+  "session": "spalle",
+  "idx": 0,
+  "text": "Siediti o sdraiati dove stai comoda. Gli occhi possono restare aperti, se ti fa stare meglio.",
+  "pause": 4
+ },
+ {
+  "name": "spalle_02",
+  "session": "spalle",
+  "idx": 1,
+  "text": "Fai tre respiri lenti. Inspira dal naso, e lascia uscire l’aria dalla bocca, piano.",
+  "pause": 14
+ },
+ {
+  "name": "spalle_03",
+  "session": "spalle",
+  "idx": 2,
+  "text": "Porta l’attenzione alle spalle. Sollevale verso le orecchie, senza forzare, e tienile su qualche secondo.",
+  "pause": 6
+ },
+ {
+  "name": "spalle_04",
+  "session": "spalle",
+  "idx": 3,
+  "text": "Adesso lasciale cadere. Senti il loro peso che scende.",
+  "pause": 10
+ },
+ {
+  "name": "spalle_05",
+  "session": "spalle",
+  "idx": 4,
+  "text": "Capita spesso che, quando il corpo si distende, il fruscio si faccia notare. Non è peggiorato: era già lì, e adesso lo noti.",
+  "pause": 6
+ },
+ {
+  "name": "spalle_06",
+  "session": "spalle",
+  "idx": 5,
+  "text": "Non devi farlo smettere e non devi seguirlo. Riconosci che c’è, come un rumore in fondo a una stanza, e torna al respiro.",
+  "pause": 12
+ },
+ {
+  "name": "spalle_07",
+  "session": "spalle",
+  "idx": 6,
+  "text": "Lascia andare la mandibola. I denti si staccano, la lingua si appoggia in basso.",
+  "pause": 8
+ },
+ {
+  "name": "spalle_08",
+  "session": "spalle",
+  "idx": 7,
+  "text": "Lascia andare la fronte e gli occhi. Le sopracciglia si distendono.",
+  "pause": 8
+ },
+ {
+  "name": "spalle_09",
+  "session": "spalle",
+  "idx": 8,
+  "text": "Ancora un respiro lungo. Con l’espiro, le spalle scendono ancora un poco.",
+  "pause": 12
+ },
+ {
+  "name": "spalle_10",
+  "session": "spalle",
+  "idx": 9,
+  "text": "Quando vuoi, apri gli occhi e guardati intorno. Porta con te questa morbidezza.",
+  "pause": 4
+ },
+ {
+  "name": "scansione_01",
+  "session": "scansione",
+  "idx": 0,
+  "text": "Mettiti sdraiata, comoda. Puoi chiudere gli occhi, oppure lasciarli aperti con lo sguardo morbido.",
+  "pause": 5
+ },
+ {
+  "name": "scansione_02",
+  "session": "scansione",
+  "idx": 1,
+  "text": "Fai cinque respiri profondi. Inspira, ed espira lasciando andare. Se vuoi, pensa la parola «rilassa» mentre espiri.",
+  "pause": 28
+ },
+ {
+  "name": "scansione_03",
+  "session": "scansione",
+  "idx": 2,
+  "text": "Nota come sei appoggiata: il peso a destra e a sinistra, i punti dove il corpo tocca il letto. Aggiusta la posizione se serve.",
+  "pause": 12
+ },
+ {
+  "name": "scansione_04",
+  "session": "scansione",
+  "idx": 3,
+  "text": "Se senti dei suoni, compreso il fruscio, riconoscili un momento: ci sono. Poi riporta l’attenzione al respiro.",
+  "pause": 10
+ },
+ {
+  "name": "scansione_05",
+  "session": "scansione",
+  "idx": 4,
+  "text": "Ora fai un giro del corpo, partendo dai piedi. Senti le dita, le piante, le caviglie. Non cambiare niente, osserva soltanto.",
+  "pause": 18
+ },
+ {
+  "name": "scansione_06",
+  "session": "scansione",
+  "idx": 5,
+  "text": "Sali ai polpacci e alle ginocchia. Poi alle cosce. Dove c’è tensione, nota la tensione e vai avanti.",
+  "pause": 18
+ },
+ {
+  "name": "scansione_07",
+  "session": "scansione",
+  "idx": 6,
+  "text": "Il bacino e la parte bassa della schiena. Lascia che il peso si affidi al materasso.",
+  "pause": 16
+ },
+ {
+  "name": "scansione_08",
+  "session": "scansione",
+  "idx": 7,
+  "text": "La pancia che sale e scende con il respiro. Non guidarlo, lascialo fare.",
+  "pause": 16
+ },
+ {
+  "name": "scansione_09",
+  "session": "scansione",
+  "idx": 8,
+  "text": "Il petto e la schiena in alto. Le costole che si allargano e si richiudono.",
+  "pause": 16
+ },
+ {
+  "name": "scansione_10",
+  "session": "scansione",
+  "idx": 9,
+  "text": "Le mani, le braccia, i gomiti. Poi le spalle: lasciale scendere.",
+  "pause": 18
+ },
+ {
+  "name": "scansione_11",
+  "session": "scansione",
+  "idx": 10,
+  "text": "Il collo e la gola. Poi la mandibola, le guance, la bocca.",
+  "pause": 16
+ },
+ {
+  "name": "scansione_12",
+  "session": "scansione",
+  "idx": 11,
+  "text": "Gli occhi, la fronte, la testa. Tutta la testa, fino alla nuca.",
+  "pause": 16
+ },
+ {
+  "name": "scansione_13",
+  "session": "scansione",
+  "idx": 12,
+  "text": "Rifai il giro in fretta, dai piedi alla testa, notando che cosa è cambiato.",
+  "pause": 28
+ },
+ {
+  "name": "scansione_14",
+  "session": "scansione",
+  "idx": 13,
+  "text": "Non c’è bisogno di addormentarsi adesso. Resta ancora un momento con il respiro.",
+  "pause": 14
+ },
+ {
+  "name": "scansione_15",
+  "session": "scansione",
+  "idx": 14,
+  "text": "Quando sei pronta, muovi piano le dita di mani e piedi. Questa pausa è tua.",
+  "pause": 4
+ },
+ {
+  "name": "muscolare_01",
+  "session": "muscolare",
+  "idx": 0,
+  "text": "Mettiti comoda. Fai cinque respiri profondi, pensando «rilassa» mentre espiri.",
+  "pause": 26
+ },
+ {
+  "name": "muscolare_02",
+  "session": "muscolare",
+  "idx": 1,
+  "text": "Per ogni gruppo di muscoli: tensione leggera, mai dolorosa, per dieci secondi. Se qualcosa fa male, salta quel passo.",
+  "pause": 5
+ },
+ {
+  "name": "muscolare_03",
+  "session": "muscolare",
+  "idx": 2,
+  "text": "Prima le braccia. Chiudi i pugni e tendi entrambe le braccia. Pensa «tendi».",
+  "pause": 10
+ },
+ {
+  "name": "muscolare_04",
+  "session": "muscolare",
+  "idx": 3,
+  "text": "Lascia andare, e respira. Pensa «rilassa» e senti le braccia che si fanno pesanti.",
+  "pause": 16
+ },
+ {
+  "name": "muscolare_05",
+  "session": "muscolare",
+  "idx": 4,
+  "text": "Ora il viso, il collo e la gola. Increspa leggermente il viso, senza stringere troppo. Tieni.",
+  "pause": 10
+ },
+ {
+  "name": "muscolare_06",
+  "session": "muscolare",
+  "idx": 5,
+  "text": "Lascia andare. Senti la differenza tra prima e dopo.",
+  "pause": 16
+ },
+ {
+  "name": "muscolare_07",
+  "session": "muscolare",
+  "idx": 6,
+  "text": "Le spalle e il petto. Porta le spalle verso le orecchie e inspira piano. Tieni.",
+  "pause": 10
+ },
+ {
+  "name": "muscolare_08",
+  "session": "muscolare",
+  "idx": 7,
+  "text": "Lascia andare, ed espira lentamente.",
+  "pause": 16
+ },
+ {
+  "name": "muscolare_09",
+  "session": "muscolare",
+  "idx": 8,
+  "text": "La schiena e la pancia. Irrigidisci la pancia con delicatezza. Tieni.",
+  "pause": 10
+ },
+ {
+  "name": "muscolare_10",
+  "session": "muscolare",
+  "idx": 9,
+  "text": "Lascia andare. Il respiro torna da solo.",
+  "pause": 16
+ },
+ {
+  "name": "muscolare_11",
+  "session": "muscolare",
+  "idx": 10,
+  "text": "Infine le gambe e i piedi. Tendi le cosce e porta le punte dei piedi verso di te. Tieni.",
+  "pause": 10
+ },
+ {
+  "name": "muscolare_12",
+  "session": "muscolare",
+  "idx": 11,
+  "text": "Lascia andare tutto. Senti il corpo appoggiato, pesante.",
+  "pause": 20
+ },
+ {
+  "name": "muscolare_13",
+  "session": "muscolare",
+  "idx": 12,
+  "text": "Un ultimo respiro lungo. Rilascia ogni tensione rimasta.",
+  "pause": 10
+ },
+ {
+  "name": "spiaggia_01",
+  "session": "spiaggia",
+  "idx": 0,
+  "text": "Chiudi gli occhi e mettiti comoda. Pensa a una spiaggia, magari una in cui sei stata davvero.",
+  "pause": 8
+ },
+ {
+  "name": "spiaggia_02",
+  "session": "spiaggia",
+  "idx": 1,
+  "text": "Guarda l’acqua azzurra, il cielo, qualche uccello che passa in alto. Sotto di te c’è la sabbia.",
+  "pause": 14
+ },
+ {
+  "name": "spiaggia_03",
+  "session": "spiaggia",
+  "idx": 2,
+  "text": "Porta l’attenzione ai piedi. Sono nella sabbia calda: muovili, scavali un poco, senti la sabbia che scivola.",
+  "pause": 16
+ },
+ {
+  "name": "spiaggia_04",
+  "session": "spiaggia",
+  "idx": 3,
+  "text": "Ascolta le onde che arrivano e si ritirano. Lontano, il verso degli uccelli.",
+  "pause": 16
+ },
+ {
+  "name": "spiaggia_05",
+  "session": "spiaggia",
+  "idx": 4,
+  "text": "Senti l’odore del mare, l’aria salata sulla pelle, il sole tiepido sulle spalle.",
+  "pause": 16
+ },
+ {
+  "name": "spiaggia_06",
+  "session": "spiaggia",
+  "idx": 5,
+  "text": "Resta qui. Se i pensieri vanno altrove, riportali con gentilezza alla spiaggia.",
+  "pause": 24
+ },
+ {
+  "name": "spiaggia_07",
+  "session": "spiaggia",
+  "idx": 6,
+  "text": "Quando sei pronta, riapri piano gli occhi e guardati intorno. La spiaggia resta con te.",
+  "pause": 4
+ },
+ {
+  "name": "bosco_01",
+  "session": "bosco",
+  "idx": 0,
+  "text": "Chiudi gli occhi e mettiti comoda. Immagina l’inizio di un sentiero in un bosco.",
+  "pause": 8
+ },
+ {
+  "name": "bosco_02",
+  "session": "bosco",
+  "idx": 1,
+  "text": "Guarda i tronchi, il muschio, la luce che filtra tra i rami e disegna macchie sul terreno.",
+  "pause": 14
+ },
+ {
+  "name": "bosco_03",
+  "session": "bosco",
+  "idx": 2,
+  "text": "Cammina piano. Senti sotto i piedi la terra morbida e le foglie.",
+  "pause": 16
+ },
+ {
+  "name": "bosco_04",
+  "session": "bosco",
+  "idx": 3,
+  "text": "Ascolta il vento tra gli alberi, un ruscello poco lontano, ogni tanto un uccello.",
+  "pause": 16
+ },
+ {
+  "name": "bosco_05",
+  "session": "bosco",
+  "idx": 4,
+  "text": "Senti l’odore della terra umida e della resina. L’aria è fresca, ti fa bene respirare.",
+  "pause": 16
+ },
+ {
+  "name": "bosco_06",
+  "session": "bosco",
+  "idx": 5,
+  "text": "Trova un posto dove sederti, e restaci. Se i pensieri vanno altrove, riportali al bosco.",
+  "pause": 24
+ },
+ {
+  "name": "bosco_07",
+  "session": "bosco",
+  "idx": 6,
+  "text": "Quando sei pronta, riapri piano gli occhi. Il bosco resta dove l’hai lasciato.",
+  "pause": 4
+ },
+ {
+  "name": "ascolto_01",
+  "session": "ascolto",
+  "idx": 0,
+  "text": "Siediti comoda, con gli occhi aperti o chiusi. Fai tre respiri lenti. Questo esercizio non vuole ottenere niente: serve solo a notare.",
+  "pause": 20
+ },
+ {
+  "name": "ascolto_02",
+  "session": "ascolto",
+  "idx": 1,
+  "text": "Ascolta i suoni intorno a te. Prima i più lontani, poi i più vicini.",
+  "pause": 20
+ },
+ {
+  "name": "ascolto_03",
+  "session": "ascolto",
+  "idx": 2,
+  "text": "Può darsi che tu senta anche il tuo fruscio. Se c’è, riconoscilo: c’è. Non devi cambiarlo né spiegarlo.",
+  "pause": 16
+ },
+ {
+  "name": "ascolto_04",
+  "session": "ascolto",
+  "idx": 3,
+  "text": "Se la mente dice «è fastidioso», nota anche questo: è un pensiero. Lascialo passare come una nuvola.",
+  "pause": 16
+ },
+ {
+  "name": "ascolto_05",
+  "session": "ascolto",
+  "idx": 4,
+  "text": "Torna al respiro. Quando il fruscio ti riporta la sua attenzione, riconoscilo di nuovo, poi respira.",
+  "pause": 24
+ },
+ {
+  "name": "ascolto_06",
+  "session": "ascolto",
+  "idx": 5,
+  "text": "Allarga l’ascolto a tutta la stanza, come se fosse un’unica musica di cose diverse.",
+  "pause": 22
+ },
+ {
+  "name": "ascolto_07",
+  "session": "ascolto",
+  "idx": 6,
+  "text": "Se a un certo punto ti agiti, fermati e fai qualcosa di concreto: bevi un po’ d’acqua, guarda fuori, ascolta un suono vero.",
+  "pause": 10
+ },
+ {
+  "name": "ascolto_08",
+  "session": "ascolto",
+  "idx": 7,
+  "text": "Bene così. Riapri gli occhi quando vuoi.",
+  "pause": 4
+ },
+ {
+  "name": "mondo_01",
+  "session": "mondo",
+  "idx": 0,
+  "text": "Fermati un momento. Non importa dove sei. Fai un respiro lento.",
+  "pause": 10
+ },
+ {
+  "name": "mondo_02",
+  "session": "mondo",
+  "idx": 1,
+  "text": "Cerca tre suoni veri intorno a te. Un motore lontano, una voce, un tintinnio, il vento, un elettrodomestico.",
+  "pause": 16
+ },
+ {
+  "name": "mondo_03",
+  "session": "mondo",
+  "idx": 2,
+  "text": "Scegli il più lontano. Seguilo con l’attenzione, come se lo inseguissi con l’orecchio.",
+  "pause": 14
+ },
+ {
+  "name": "mondo_04",
+  "session": "mondo",
+  "idx": 3,
+  "text": "Ora scegline uno vicino. Com’è fatto? Acuto o grave, continuo o a colpi, morbido o duro?",
+  "pause": 16
+ },
+ {
+  "name": "mondo_05",
+  "session": "mondo",
+  "idx": 4,
+  "text": "Cerca un suono che non avevi notato prima.",
+  "pause": 16
+ },
+ {
+  "name": "mondo_06",
+  "session": "mondo",
+  "idx": 5,
+  "text": "Il fruscio può esserci: è uno dei suoni. Il resto è lì insieme a lui, non al suo posto.",
+  "pause": 12
+ },
+ {
+  "name": "mondo_07",
+  "session": "mondo",
+  "idx": 6,
+  "text": "Un ultimo respiro. Riprendi quello che stavi facendo.",
+  "pause": 3
+ },
+ {
+  "name": "pausa_01",
+  "session": "pausa",
+  "idx": 0,
+  "text": "Appoggia i piedi a terra. Senti il peso del corpo.",
+  "pause": 6
+ },
+ {
+  "name": "pausa_02",
+  "session": "pausa",
+  "idx": 1,
+  "text": "Un respiro lento dal naso. Espira più a lungo di quanto hai inspirato.",
+  "pause": 10
+ },
+ {
+  "name": "pausa_03",
+  "session": "pausa",
+  "idx": 2,
+  "text": "Lascia cadere le spalle. Distendi la mandibola.",
+  "pause": 8
+ },
+ {
+  "name": "pausa_04",
+  "session": "pausa",
+  "idx": 3,
+  "text": "Ancora un respiro lungo. Il fruscio può restare: tu torni qui.",
+  "pause": 10
+ }
+]

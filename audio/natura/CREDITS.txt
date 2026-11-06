@@ -1,0 +1,20 @@
+Suoni della natura di Bonaccia - crediti e licenze
+
+Tutte le registrazioni sono su Freesound.org con licenza CC0 (pubblico dominio): non richiedono
+attribuzione, ma i titoli sono qui per riconoscenza. Le anteprime HQ (mp3) sono state ritagliate
+(una finestra di 60 secondi), riportate a un livello uniforme, compresse piano e limitate nei picchi
+da tools/elabora_natura.py. Il ciclo senza stacchi lo fa il sito.
+
+natura_pioggia.mp3   Freesound 392304   "Rain recorded inside with open window"                CC0
+natura_mare.mp3      Freesound 578524   "Calm ocean waves"                                    CC0
+natura_fiume.mp3     Freesound 730149   "Saliouse river murmur 17"                            CC0
+natura_fontana.mp3   Freesound 460559   "fountain ambience 2, courtyard abbey gardens"        CC0
+natura_bosco.mp3     Freesound 844605   "Morning Forest with Birds"                           CC0
+
+Scelte dalla lista dei suoni della natura di GET Through - Original (docs/audio.md), tenendo solo quelle con
+licenza CC0 e poco contenuto acuto (la pioggia in giardino, 575378, è più sibilante e non è stata inclusa).
+Non ascoltate dall'autore del progetto: scelte da misure (livello, regolarità, quota di acuti).
+
+Voce guida (audio/voce): sintesi vocale Gemini (voce "Vindemiatrix", it-IT), lavorata con lo stesso
+filtro delle voci di GET Through: un poco più bassa, 9% più lenta, più calda e morbida
+(tools/voce/genera_voce.py). Non è la registrazione di una persona.

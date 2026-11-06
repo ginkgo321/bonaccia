@@ -1,0 +1,26 @@
+Nessun suono specifico si è dimostrato chiaramente superiore agli altri. Secondo la revisione Cochrane del 2018 non ci sono prove che la terapia sonora superi la lista d’attesa, il placebo o la sola informazione, né che un’opzione sia migliore di un’altra. Esistono però studi su tipi di suono specifici, tutti piccoli o con risultati parziali: 
+ucc
+
+Rumore a banda larga (tipo rumore bianco). In uno studio randomizzato incrociato su 18 persone, dopo 8 settimane il rumore ha ridotto il punteggio di gravità di 8,2 punti, contro i 3,2 dei suoni naturali. 
+frontiersin
+Suoni naturali (pioggia, onde). Uno studio precedente ha osservato che vengono accettati dai pazienti più volentieri del rumore bianco. Nel confronto diretto citato sopra, però, hanno funzionato meno. 
+nih
+Musica “con il buco” (notched music). È musica da cui si toglie la banda di frequenze dell’acufene. In uno studio su 100 pazienti dopo tre mesi l’intensità percepita è diminuita, ma il disagio complessivo non è cambiato in modo rilevante. Una meta-analisi del 2024 non ha trovato effetti significativi sul disagio a 3 e 6 mesi, e un’altra conclude che non ha superato il semplice ascolto di musica. 
+Clinical trial on tonal tinnitus with tailor-made notched music training
+ +2
+Toni frattali (tipo “campanelli a vento”, Widex Zen). In uno studio su 14 persone la maggior parte le ha trovate più rilassanti e oltre metà ha avuto miglioramenti clinicamente significativi in almeno una misura in 6 mesi. Gran parte degli studi successivi è legata al produttore, quindi le prove restano deboli. 
+nih
+
+Un dato utile: nello studio su rumore e suoni naturali, il suono preferito dal paziente non corrispondeva a quello che dava più beneficio. Gli autori segnalano anche una grande variabilità da persona a persona. 
+doaj
+nih
+
+In pratica conviene provare con l’audiologo un suono gradevole e sopportabile, inserito in un percorso con counselling o terapia cognitivo-comportamentale. Il suono da solo non è una cura.
+
+Fonti:
+
+Cochrane – Sereda et al. 2018
+Durai & Searchfield 2017, Front Aging Neurosci
+Stein et al. 2016, BMC Neurology (notched music)
+Tavanai et al. 2024, Eur Arch Otorhinolaryngol
+Sweetow & Sabes 2010, J Am Acad Audiol (toni frattali)

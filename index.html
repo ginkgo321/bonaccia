@@ -1,21 +1,335 @@
-<!DOCTYPE html>
-<html lang="it">
+<!doctype html>
+<html lang="it" data-theme="day">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>bonaccia</title>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; background: #FFF6E3; color: #1B2B21; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; }
-    .card { background: #fff; border: 3px solid #1B2B21; padding: 40px; border-radius: 22px; max-width: 500px; box-shadow: 6px 6px 0 #1B2B21; }
-    h1 { color: #1F883D; margin-top: 0; }
-    p { color: #5C6A5F; line-height: 1.6; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bonaccia – un posto calmo per l’acufene</title>
+<meta name="description" content="Suoni, respiro e piccoli esercizi per stare meglio con l’acufene.">
+<meta name="theme-color" content="#E8EEEB" id="meta-theme">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bonaccia">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="card">
-    <h1>bonaccia è online! 🌱</h1>
-    <p>Questo sito è stato creato con <strong>Pagi Hub</strong>.</p>
-    <p>Per pubblicare il sito vero, trascina la tua cartella HTML nell'applicazione.</p>
+
+<a class="skip" href="#main">Vai al contenuto</a>
+
+<header class="top">
+  <a class="brand" href="#ora" aria-label="Bonaccia, vai alla pagina Ora">
+    <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="3.2" fill="currentColor"/><circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".7"/><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".4"/></svg>
+    <span>Bonaccia</span>
+  </a>
+  <div class="top-actions">
+    <button class="icon-btn" id="btn-theme" type="button" aria-label="Passa al tema notte" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </button>
+    <a class="icon-btn" href="#capire" aria-label="Capire cosa succede">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2.9-1.2 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.6" r="1" fill="currentColor"/></svg>
+    </a>
   </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<!-- ================= ORA ================= -->
+<section class="view" id="v-ora" data-title="Ora" hidden>
+  <h1 id="greet">Buongiorno</h1>
+  <p class="lede">Un posto calmo per stare con il fruscio senza combatterlo.</p>
+
+  <div class="checkin">
+    <label for="ci-range">Quanto ti disturba in questo momento?</label>
+    <div class="scale">
+      <input type="range" id="ci-range" min="0" max="10" step="1" value="3">
+      <output id="ci-out" for="ci-range">3</output>
+    </div>
+    <div class="scale-ends"><span>per niente</span><span>moltissimo</span></div>
+    <button class="btn" id="ci-save" type="button">Segna questo momento</button>
+    <p class="hint" id="ci-hint" role="status" aria-live="polite"></p>
+  </div>
+
+  <div class="actions">
+    <button class="act act-calm" id="act-calm" type="button">
+      <strong>Calma adesso</strong>
+      <span>Un suono morbido e tre minuti di respiro lento</span>
+    </button>
+    <button class="act" id="act-out" type="button">
+      <strong>Sono in mezzo al rumore</strong>
+      <span>Cosa fare quando fuori è troppo</span>
+    </button>
+    <button class="act" id="act-sleep" type="button">
+      <strong>Voglio dormire</strong>
+      <span>Suono per la notte, con timer</span>
+    </button>
+  </div>
+
+  <div class="panel zone-panel" id="zone-panel"></div>
+
+  <div class="panel soft">
+    <h2>La via di mezzo</h2>
+    <p>Oscillare tra il silenzio, dove il fruscio emerge, e i posti rumorosi, dove sale, stanca. Qui l’idea è un livello intermedio e costante: un suono basso, nel tuo punto d’incontro, quasi sempre.</p>
+    <a class="link" href="#capire">Capire cosa succede</a>
+  </div>
+
+  <div class="panel install" id="install-tip" hidden>
+    <h2>Tienila sul telefono</h2>
+    <p>In Safari tocca Condividi, poi «Aggiungi a Home». Si apre a tutto schermo e funziona anche senza rete.</p>
+    <button class="btn secondary" id="install-hide" type="button">Ho capito</button>
+  </div>
+</section>
+
+<!-- ================= SUONI ================= -->
+<section class="view" id="v-suoni" data-title="Suoni" hidden>
+  <h1>Suoni</h1>
+
+  <div class="field-wrap">
+    <canvas id="field" width="640" height="640" aria-hidden="true"></canvas>
+    <button class="play" id="play" type="button" aria-label="Avvia il suono">
+      <svg class="i-play" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>
+    </button>
+  </div>
+  <p class="now" id="now" role="status" aria-live="polite">Pronto. Tocca per iniziare.</p>
+  <p class="warn" id="audio-warn" hidden>Questo browser non riesce a produrre suoni. Prova con Safari o Chrome aggiornati.</p>
+
+  <div class="level">
+    <label for="master">Volume del suono</label>
+    <div class="zonebar" id="zonebar">
+      <div class="zone" id="zone" hidden></div>
+      <input type="range" id="master" min="0" max="1" step="0.005" value="0.5" aria-describedby="level-hint">
+    </div>
+    <div class="zone-caption"><span>troppo piano</span><span id="zone-mid"></span><span>troppo forte</span></div>
+    <p class="hint" id="level-hint"></p>
+    <button class="btn secondary" id="btn-calib" type="button">Trova il tuo punto d’incontro</button>
+  </div>
+
+  <h2>Atmosfere</h2>
+  <p class="sub">Provane qualcuna a volume molto basso e segna nel diario quale ti dà più pace: il più gradevole non è sempre il più utile.</p>
+  <p class="sub">Se un suono continuo e uniforme ti fa salire il fruscio, spegnilo. Capita, e non è un fallimento: prova prima i suoni con più forma, come la pioggia, le onde o il ruscello.</p>
+  <div class="presets" id="presets"></div>
+
+  <h2>Mixer</h2>
+  <div class="seg" id="src-seg" role="radiogroup" aria-label="Tipo di suoni naturali">
+    <button type="button" role="radio" data-src="real" aria-checked="true">Registrati</button>
+    <button type="button" role="radio" data-src="synth" aria-checked="false">Sintetici</button>
+  </div>
+  <p class="hint" id="src-hint" role="status"></p>
+  <div class="mixer" id="mixer"></div>
+
+  <h2>Timer</h2>
+  <div class="chips" id="timer-chips" role="group" aria-label="Durata del timer"></div>
+  <div class="seg" id="end-mode" role="radiogroup" aria-label="Cosa succede alla fine">
+    <button type="button" role="radio" data-mode="low" aria-checked="true">Alla fine resta sommesso</button>
+    <button type="button" role="radio" data-mode="off" aria-checked="false">Alla fine si spegne piano</button>
+  </div>
+  <p class="hint" id="timer-left" role="status"></p>
+
+  <h2>I tuoi mix</h2>
+  <form class="inline-form" id="save-mix">
+    <label class="visually-hidden" for="mix-name">Nome del mix</label>
+    <input type="text" id="mix-name" placeholder="Dai un nome a questo mix" maxlength="30" autocomplete="off">
+    <button class="btn" type="submit">Salva</button>
+  </form>
+  <div class="mymixes" id="mymixes"></div>
+</section>
+
+<!-- ================= CALMA ================= -->
+<section class="view" id="v-calma" data-title="Calma" hidden>
+  <h1>Calma</h1>
+  <p class="lede">Il corpo si calma più in fretta della mente. Parti da qui.</p>
+
+  <div class="panel">
+    <h2>Respiro guidato</h2>
+    <p class="sub grp">Ritmo</p>
+    <div class="chips" id="br-pattern" role="radiogroup" aria-label="Ritmo del respiro"></div>
+    <p class="hint" id="br-desc"></p>
+    <p class="sub grp">Durata</p>
+    <div class="chips" id="br-dur" role="radiogroup" aria-label="Durata"></div>
+    <label class="check"><input type="checkbox" id="br-cue" checked> <span>Un soffio di suono accompagna il respiro</span></label>
+    <button class="btn" id="br-start" type="button">Inizia</button>
+  </div>
+
+  <h2>Esercizi guidati</h2>
+  <p class="sub">Puoi leggerli o ascoltarli con la voce guida, anche a schermo bloccato. Gli occhi possono restare aperti. Se portare l’attenzione al respiro ti agita, guarda la stanza e prova «Ascolto del mondo». Nessun esercizio si fa bene o male.</p>
+  <div class="list" id="session-list"></div>
+</section>
+
+<!-- ================= SONNO ================= -->
+<section class="view" id="v-sonno" data-title="Sonno" hidden>
+  <h1>Sonno</h1>
+
+  <div class="panel night-panel">
+    <h2>Stanotte</h2>
+    <p class="sub">Un suono basso e uniforme, senza luce e senza notiziari. Il silenzio completo è quello che rende il fruscio più evidente.</p>
+    <p class="sub grp">Quale suono</p>
+    <div class="chips" id="sl-preset" role="radiogroup" aria-label="Suono per la notte"></div>
+    <p class="sub grp">Per quanto tempo</p>
+    <div class="chips" id="sl-timer" role="radiogroup" aria-label="Durata"></div>
+    <label class="check"><input type="checkbox" id="sl-awake"> <span>Tieni lo schermo acceso (nero) se il blocco schermo ferma il suono</span></label>
+    <button class="btn btn-night" id="sl-go" type="button">Buonanotte</button>
+  </div>
+
+  <div class="panel">
+    <h2>Prima di dormire</h2>
+    <ul class="checklist" id="checklist"></ul>
+    <p class="hint">Si azzera ogni giorno. Non serve fare tutto: scegli due o tre cose e falle con costanza per tre settimane.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Se ti svegli di notte</h2>
+    <p>Quando ti svegli di notte, il fruscio è la prima cosa che senti. Di solito non è lui a svegliarti: i risvegli fanno parte del sonno normale, e lui è soltanto ciò che incontri per primo. Il suono acceso aiuta. Non guardare l’ora.</p>
+    <ul class="plain">
+      <li>Fai qualche respiro con l’espiro lungo (due minuti bastano).</li>
+      <li>Se dopo 15 o 20 minuti non dormi, alzati e fai qualcosa di quieto a luce bassa, senza schermi.</li>
+    </ul>
+    <button class="btn secondary" id="sl-wake" type="button">Respiro al buio, due minuti</button>
+  </div>
+
+  <div class="panel">
+    <h2>Il quarto d’ora delle preoccupazioni</h2>
+    <p class="sub">Di giorno, non la sera: siediti quindici minuti e scrivi quello che ti preoccupa. A letto, se il pensiero torna, sai che l’hai già affrontato.</p>
+    <label class="visually-hidden" for="worry-text">Le tue preoccupazioni</label>
+    <textarea id="worry-text" rows="4" placeholder="Cosa mi preoccupa… e qual è il primo piccolo passo?"></textarea>
+    <button class="btn secondary" id="worry-save" type="button">Salva</button>
+    <div class="notes" id="worry-list"></div>
+  </div>
+</section>
+
+<!-- ================= DIARIO ================= -->
+<section class="view" id="v-diario" data-title="Diario" hidden>
+  <h1>Diario</h1>
+  <p class="lede">Ti serve a vedere cosa ti fa bene. Resta sul tuo telefono: non viene inviato a nessuno.</p>
+
+  <form class="panel" id="diary-form">
+    <h2>Com’è adesso</h2>
+    <div class="field">
+      <label for="d-loud">Quanto si sente</label>
+      <div class="scale"><input type="range" id="d-loud" min="0" max="10" step="1" value="4"><output id="d-loud-o" for="d-loud">4</output></div>
+    </div>
+    <div class="field">
+      <label for="d-ann">Quanto ti disturba</label>
+      <div class="scale"><input type="range" id="d-ann" min="0" max="10" step="1" value="3"><output id="d-ann-o" for="d-ann">3</output></div>
+    </div>
+    <div class="field">
+      <label for="d-str">Quanto sei tesa</label>
+      <div class="scale"><input type="range" id="d-str" min="0" max="10" step="1" value="3"><output id="d-str-o" for="d-str">3</output></div>
+    </div>
+    <fieldset class="chips-field">
+      <legend>Dove sei</legend>
+      <div class="chips" id="d-where"></div>
+    </fieldset>
+    <fieldset class="chips-field">
+      <legend>Cosa stai ascoltando</legend>
+      <div class="chips" id="d-sound"></div>
+    </fieldset>
+    <label class="visually-hidden" for="d-note">Nota</label>
+    <textarea id="d-note" rows="2" placeholder="Una nota, se vuoi"></textarea>
+    <button class="btn" type="submit">Salva nel diario</button>
+    <p class="hint" id="d-saved" role="status" aria-live="polite"></p>
+  </form>
+
+  <div class="panel">
+    <h2>Gli ultimi giorni</h2>
+    <div id="chart"></div>
+    <div id="insights"></div>
+  </div>
+
+  <details class="panel" id="sleep-box">
+    <summary><h2>Com’è andata stanotte</h2></summary>
+    <div class="two-col">
+      <div class="field"><label for="s-bed">A letto alle</label><input type="time" id="s-bed" value="23:30"></div>
+      <div class="field"><label for="s-wake">Alzata alle</label><input type="time" id="s-wake" value="07:00"></div>
+    </div>
+    <div class="field">
+      <label for="s-sleep">Ore dormite (stima)</label>
+      <input type="number" id="s-sleep" min="0" max="14" step="0.25" value="6.5" inputmode="decimal">
+    </div>
+    <button class="btn secondary" id="s-save" type="button">Salva la notte</button>
+    <p class="hint" id="s-info" role="status"></p>
+  </details>
+
+  <div class="panel">
+    <h2>Le tue note</h2>
+    <div class="notes" id="entries"></div>
+    <div class="row">
+      <button class="btn secondary" id="ex-copy" type="button">Copia il riepilogo</button>
+      <button class="btn secondary" id="ex-csv" type="button">Scarica CSV</button>
+    </div>
+    <p class="hint" id="ex-info" role="status"></p>
+    <button class="linkbtn danger" id="ex-clear" type="button">Cancella tutti i dati</button>
+  </div>
+</section>
+
+<!-- ================= CAPIRE ================= -->
+<section class="view" id="v-capire" data-title="Capire" hidden>
+  <h1>Capire cosa succede</h1>
+  <p class="lede">Conoscere il meccanismo toglie parte della paura, ed è già un pezzo di terapia.</p>
+  <div class="acc" id="acc"></div>
+  <p class="fine">Bonaccia è un aiuto per stare meglio, non un dispositivo medico, e non sostituisce la visita di un medico, di un audiologo o di uno psicologo. Non raccoglie dati: tutto resta sul tuo telefono.</p>
+</section>
+
+</main>
+
+<!-- mini-player -->
+<div class="mini" id="mini" hidden>
+  <button class="mini-main" id="mini-open" type="button" aria-label="Apri i suoni">
+    <span class="mini-dot" aria-hidden="true"></span>
+    <span class="mini-text"><strong id="mini-title">Suono in corso</strong><small id="mini-sub"></small></span>
+  </button>
+  <button class="mini-btn" id="mini-toggle" type="button" aria-label="Metti in pausa">
+    <svg class="i-pause" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>
+    <svg class="i-play" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+  </button>
+</div>
+
+<nav class="tabs" id="tabs" aria-label="Sezioni">
+  <a href="#ora" data-tab="ora">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+    <span>Ora</span>
+  </a>
+  <a href="#suoni" data-tab="suoni">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 12c2.2-5 4.4-5 6 0s3.8 5 6 0 4-4 6 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17c2.2-3 4.4-3 6 0s3.8 3 6 0 4-2.4 6 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
+    <span>Suoni</span>
+  </a>
+  <a href="#calma" data-tab="calma">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 20c-5 0-8-3.4-8-8 4.6 0 8 3 8 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 20c5 0 8-3.4 8-8-4.6 0-8 3-8 8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 20V6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    <span>Calma</span>
+  </a>
+  <a href="#sonno" data-tab="sonno">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span>Sonno</span>
+  </a>
+  <a href="#diario" data-tab="diario">
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 9h6M9.5 13h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    <span>Diario</span>
+  </a>
+</nav>
+
+<!-- foglio (finestre sovrapposte) -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <div class="sheet-card" id="sheet-card" tabindex="-1"></div>
+</div>
+
+<!-- buonanotte: schermo nero -->
+<div class="night" id="night" role="dialog" aria-modal="true" aria-label="Modalità Buonanotte" hidden>
+  <p class="night-title">Buonanotte</p>
+  <p class="night-sub" id="night-sub">Il suono resta acceso.</p>
+  <div class="night-row">
+    <button type="button" id="night-down" aria-label="Più piano">Più piano</button>
+    <button type="button" id="night-up" aria-label="Più forte">Più forte</button>
+  </div>
+  <div class="night-row">
+    <button type="button" id="night-wake">Mi sono svegliata</button>
+    <button type="button" id="night-off">Spegni ed esci</button>
+  </div>
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/content.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

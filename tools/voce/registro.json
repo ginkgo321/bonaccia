@@ -1,0 +1,286 @@
+{
+ "ascolto_01": {
+  "d": 13.31,
+  "h": "4c54991d66ef9e8d07506724b44ca69f2cb81156"
+ },
+ "ascolto_02": {
+  "d": 7.67,
+  "h": "f1ef1e01423f4897891f0d89c901c66364121563"
+ },
+ "ascolto_03": {
+  "d": 9.67,
+  "h": "9d1b9473454b2df56bb962b162029e03ba47a9ee"
+ },
+ "ascolto_04": {
+  "d": 9.0,
+  "h": "80079334adae1550aa9774f6df78384e6c97cb8e"
+ },
+ "ascolto_05": {
+  "d": 10.76,
+  "h": "5361746f3f15f400c28783d80b17e269193d960c"
+ },
+ "ascolto_06": {
+  "d": 6.96,
+  "h": "09c97a6d32004712a95b521bb5227431c8a059a8"
+ },
+ "ascolto_07": {
+  "d": 10.64,
+  "h": "6e72b0735a175e47f4b33825755994cf3cdbd3f3"
+ },
+ "ascolto_08": {
+  "d": 3.62,
+  "h": "e2c7e38f660035a2d147f8391a55670d5bebe634"
+ },
+ "bosco_01": {
+  "d": 7.15,
+  "h": "c467f1282a8173b0090ab04e412fedaf5b3b435f"
+ },
+ "bosco_02": {
+  "d": 9.38,
+  "h": "e304600ee2747282d78ed8a22ddf8525db6251c0"
+ },
+ "bosco_03": {
+  "d": 5.93,
+  "h": "81eddd213218031f57cbd0313413a7bf51c34a91"
+ },
+ "bosco_04": {
+  "d": 7.87,
+  "h": "bd5bd405dd2319b0fcd4269e66b57abfe68e78b6"
+ },
+ "bosco_05": {
+  "d": 7.87,
+  "h": "693313aa2b673d7fb93a122265474184054cbd6d"
+ },
+ "bosco_06": {
+  "d": 8.32,
+  "h": "b37d64c21ca9fd8306b87f1e47b65572ad5b8144"
+ },
+ "bosco_07": {
+  "d": 6.99,
+  "h": "a4799bcf3a97c9bec10594dbd3536f101d6c9a55"
+ },
+ "mondo_01": {
+  "d": 6.74,
+  "h": "b6c0fea016a11078f48de95c6c72b5c88b1240b0"
+ },
+ "mondo_02": {
+  "d": 10.96,
+  "h": "630bd51c132f3c9a6f06a4bf0fe559650e8fa879"
+ },
+ "mondo_03": {
+  "d": 6.79,
+  "h": "0c7a2185f23302c58182c4c28d0c8b62783b12fa"
+ },
+ "mondo_04": {
+  "d": 10.07,
+  "h": "c4cf1d69f1eaac3cdb5144177b49437a4b8acbd8"
+ },
+ "mondo_05": {
+  "d": 3.63,
+  "h": "8968907633514240a3e83da323e0a397eae9074b"
+ },
+ "mondo_06": {
+  "d": 8.91,
+  "h": "3e18951d7382d7dc2f1ebf798d336b303765d60c"
+ },
+ "mondo_07": {
+  "d": 4.4,
+  "h": "49f5039d0bdec2391a5645fd7743be57163389ca"
+ },
+ "muscolare_01": {
+  "d": 7.72,
+  "h": "b55330c366f1ceed63bb8bc32e3f206c34024aea"
+ },
+ "muscolare_02": {
+  "d": 10.43,
+  "h": "61e973ae9ba8b377f063df19111905f7d7b60977"
+ },
+ "muscolare_03": {
+  "d": 6.96,
+  "h": "07af44cc146eb91d85fe32dc3ff07b63f992be0b"
+ },
+ "muscolare_04": {
+  "d": 8.89,
+  "h": "a7397409171f608eb5ec2d8e60e5a73b8bdf4b90"
+ },
+ "muscolare_05": {
+  "d": 10.22,
+  "h": "09b96f467f5f13019c87d84119c9bfe59b813c2c"
+ },
+ "muscolare_06": {
+  "d": 6.69,
+  "h": "c1390a2b849db58411d51d5a69b90ca8587750da"
+ },
+ "muscolare_07": {
+  "d": 8.36,
+  "h": "588735a1894f63c5cad9893de699f000458ccc4e"
+ },
+ "muscolare_08": {
+  "d": 4.33,
+  "h": "efb29387ab2724d22e1f0a46cf6f912def08cd8b"
+ },
+ "muscolare_09": {
+  "d": 6.87,
+  "h": "68e12e4a36a40bd078a517b8cbe41d5b67279f1c"
+ },
+ "muscolare_10": {
+  "d": 4.85,
+  "h": "2da4d28a0480f80c6fac63de526bb8c1121d3ab5"
+ },
+ "muscolare_11": {
+  "d": 7.67,
+  "h": "072c92328f9b37e6f6752f8315c51a1cad417530"
+ },
+ "muscolare_12": {
+  "d": 7.63,
+  "h": "a82ddd24585621e1d1b6d9fa927ca64abbc098a2"
+ },
+ "muscolare_13": {
+  "d": 6.57,
+  "h": "d29547a7574b6c3743b2c889e89a673633be1600"
+ },
+ "pausa_01": {
+  "d": 5.05,
+  "h": "b8b656983a9b4bef59db93360c41fce708d2316b"
+ },
+ "pausa_02": {
+  "d": 6.58,
+  "h": "d4fea9034135969db1294da24109d18dfd2b536e"
+ },
+ "pausa_03": {
+  "d": 5.19,
+  "h": "c17fa22cc72c8abc1d1a698c16fcabc96819a231"
+ },
+ "pausa_04": {
+  "d": 7.5,
+  "h": "e291bc497607a4c7e27d22dddb3aad3f2543511e"
+ },
+ "scansione_01": {
+  "d": 8.47,
+  "h": "83f61343ce3fbb3ac9d5ef41e0faa6a143d8d60c"
+ },
+ "scansione_02": {
+  "d": 13.31,
+  "h": "bb1afadcf7aba0ee0caa90e11a930c7c880d5b0e"
+ },
+ "scansione_03": {
+  "d": 10.47,
+  "h": "eaf84c6072ef1899df6a4e00b42dc47a5f7a1e91"
+ },
+ "scansione_04": {
+  "d": 9.98,
+  "h": "81665cdefad10c2b687347171b69d455d7259444"
+ },
+ "scansione_05": {
+  "d": 11.82,
+  "h": "fc260bd9e21887f974ab40441c66238c6623a974"
+ },
+ "scansione_06": {
+  "d": 10.76,
+  "h": "b097e5d63067fd527867f45c937d3fac804cf045"
+ },
+ "scansione_07": {
+  "d": 7.76,
+  "h": "e7e1041a9d278ee500fea85f90594e3b97b95823"
+ },
+ "scansione_08": {
+  "d": 7.24,
+  "h": "9ff17db54f6d175bc10adc2069bc9783a7b384ee"
+ },
+ "scansione_09": {
+  "d": 7.3,
+  "h": "91c0b9d1b263f1bc0b58f92f4a04a54d80528eec"
+ },
+ "scansione_10": {
+  "d": 6.69,
+  "h": "bfdd919e965ade10d5ebb029ee3e38d24dedba19"
+ },
+ "scansione_11": {
+  "d": 6.32,
+  "h": "e6f36a1b4e446e4a19caf608fb0d737f0329e766"
+ },
+ "scansione_12": {
+  "d": 7.73,
+  "h": "d9afc9907137e9b38b1ff053eba6e6a1abba4ace"
+ },
+ "scansione_13": {
+  "d": 6.26,
+  "h": "a1c1c074430ecbeb3790225e3c69d0f33bd6edf2"
+ },
+ "scansione_14": {
+  "d": 6.92,
+  "h": "3539d2b5a69b09dcfe540e0ad6c93820048545b2"
+ },
+ "scansione_15": {
+  "d": 6.55,
+  "h": "b1a3a9fd8efd931e9fbd93c72b95a3ca488461ea"
+ },
+ "spalle_01": {
+  "d": 7.62,
+  "h": "41a62f4c9f09c6badf0d989c9c4666ba1e7a0b2e"
+ },
+ "spalle_02": {
+  "d": 8.59,
+  "h": "dc414c4dfdf59ca273af0b1df9af8d8e6d54c2a2"
+ },
+ "spalle_03": {
+  "d": 9.48,
+  "h": "d45e8bb8e8cb908f4e50c8819381b87a727a55e0"
+ },
+ "spalle_04": {
+  "d": 5.71,
+  "h": "e12663c411425aec06ed7b5ce57efaf224e9ba29"
+ },
+ "spalle_05": {
+  "d": 10.33,
+  "h": "7a53c38cb5cd6e90aebda25bcebdd3c6a6a52cad"
+ },
+ "spalle_06": {
+  "d": 10.35,
+  "h": "b177471479736ca7cc9c251284915ddfa955dd5c"
+ },
+ "spalle_07": {
+  "d": 7.3,
+  "h": "8cb1df61363652ca7299cc619017eb318676866f"
+ },
+ "spalle_08": {
+  "d": 6.32,
+  "h": "a994e3b34467ed833666a1f5657bdb6a3315be38"
+ },
+ "spalle_09": {
+  "d": 7.17,
+  "h": "ef2204b868aa30bc9355a01be08a4d50fd6bbed3"
+ },
+ "spalle_10": {
+  "d": 7.09,
+  "h": "f138300d5f9e0d5ffe5044e4536a5a912f062c9a"
+ },
+ "spiaggia_01": {
+  "d": 7.63,
+  "h": "b90165e1fb39a560310fcbb61c78ff57f334ef5e"
+ },
+ "spiaggia_02": {
+  "d": 8.62,
+  "h": "39945da2edd469688ae4d77117bbdb665103a30e"
+ },
+ "spiaggia_03": {
+  "d": 9.36,
+  "h": "900e637ad72187b3da19e75946aad2d7115bcb16"
+ },
+ "spiaggia_04": {
+  "d": 8.36,
+  "h": "d960ebe1bbbcc8f22bfd15fa9daf8f316c920bcc"
+ },
+ "spiaggia_05": {
+  "d": 6.87,
+  "h": "0fd466dcd3abbd26cc5d57bf32a9f4d152ed9f6e"
+ },
+ "spiaggia_06": {
+  "d": 7.05,
+  "h": "2552aaf64eb3ea2478d0c7430e18c8abdd7885c6"
+ },
+ "spiaggia_07": {
+  "d": 7.93,
+  "h": "1e79d2df337ff30f83d0890c721a2987b5d11721"
+ }
+}

@@ -1,0 +1,32 @@
+Sì, si chiama terapia sonora: usa suoni esterni per rendere l’acufene meno evidente e meno fastidioso. Non lo elimina. Le prove scientifiche che funzioni sono però più deboli di quanto spesso si legga.
+
+Le forme principali
+
+Arricchimento sonoro (sound enrichment): suoni di sottofondo come rumore bianco o rosa, pioggia, onde o un ventilatore, per evitare il silenzio, che fa risaltare l’acufene.
+Generatori di suono indossabili: piccoli dispositivi simili ad apparecchi acustici che emettono un rumore costante.
+Apparecchi acustici: se c’è anche un calo dell’udito, amplificare i suoni ambientali può ridurre la percezione dell’acufene.
+TRT (Tinnitus Retraining Therapy): combina counselling e suono a basso volume. Secondo la linea guida europea le prove di efficacia di alto livello sono poche.
+
+Cosa dicono le prove
+
+La revisione Cochrane del 2018 (8 studi, 590 partecipanti) non ha trovato prove che la terapia sonora sia superiore alla lista d’attesa, al placebo o alla sola informazione, né che un dispositivo sia migliore di un altro. 
+ucc
+Tuttavia apparecchi acustici e generatori di suono possono essere utili ad alcuni pazienti. 
+nih
+Le linee guida statunitensi (AAO-HNS 2014 e aggiornamento 2026) la considerano un’opzione, non una raccomandazione forte. Gli apparecchi acustici sono invece raccomandati se c’è ipoacusia.
+
+Una novità: suono più stimolazione della lingua (Lenire)
+Lenire è un dispositivo che abbina toni in cuffia a lievi impulsi elettrici sulla lingua. A marzo 2023 ha ottenuto l’autorizzazione De Novo dalla FDA, sulla base di uno studio su 112 pazienti che lo confrontava con 6 settimane di sola terapia sonora. In Europa ha il marchio CE e va usato sotto la supervisione di un professionista. Gran parte dei dati disponibili proviene da studi condotti o finanziati dall’azienda produttrice, quindi va valutato con prudenza. 
+Lenire Tinnitus Device Shows Success in Real-World Clinical Study
+ +3
+
+In pratica
+Il suono funziona meglio come parte di un percorso e non da solo. La terapia cognitivo-comportamentale (CBT) resta l’intervento con le prove più solide. Prima di tutto conviene fare una valutazione audiologica: se c’è un calo dell’udito, l’apparecchio acustico è il primo passo.
+
+Fonti:
+
+Cochrane – Sereda et al. 2018, Sound therapy for tinnitus
+Cochrane Corner, Int J Audiol (PubMed)
+Practical Neurology – approvazione FDA Lenire
+Kasper et al. 2026, Am J Audiol
+Hearing Health Matters – Lenire
