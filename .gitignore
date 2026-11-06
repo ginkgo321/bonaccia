@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# lavorazione delle voci: originali, file intermedi e registri (restano sul computer)
+tools/voce/grezzo/
+tools/voce/elaborato/
+tools/voce/ultimo_giro.log
+tools/voce/registro.json
+
+# appunti di ricerca
+suoni.txt
+suoni 2.txt
+Acufene_*.md

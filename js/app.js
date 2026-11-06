@@ -1065,7 +1065,7 @@
   }
 
   /* ================= navigazione ================= */
-  var VIEWS = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire'], currentView = null;
+  var VIEWS = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire', 'recitazioni'], currentView = null;
   function route() {
     var v = (location.hash || '#ora').slice(1).split('/')[0];
     if (VIEWS.indexOf(v) < 0) v = 'ora';
@@ -1074,11 +1074,12 @@
     $$('.view').forEach(function (s) { s.hidden = s.id !== 'v-' + v; });
     $$('#tabs a').forEach(function (a) { if (a.getAttribute('data-tab') === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var sec = $('#v-' + v);
-    document.title = (v === 'ora' ? '' : sec.getAttribute('data-title') + ' – ') + 'Bonaccia';
+    document.title = (v === 'ora' ? '' : (sec ? sec.getAttribute('data-title') : '') + ' – ') + 'Bonaccia';
     window.scrollTo(0, 0);
     if (v === 'ora') { renderGreeting(); renderZonePanel(); }
     if (v === 'sonno') renderSonno();
     if (v === 'diario') { dsel.sound = soundName(); renderDiarySounds(); renderDiary(); }
+    if (v === 'recitazioni' && B.QuranPlayer) B.QuranPlayer.init();
     renderEngine(); kickField();
   }
   window.addEventListener('hashchange', route);

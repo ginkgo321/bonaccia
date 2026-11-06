@@ -65,6 +65,10 @@
       <strong>Voglio dormire</strong>
       <span>Suono per la notte, con timer</span>
     </button>
+    <a class="act act-calm" href="#recitazioni" style="text-decoration:none;">
+      <strong>Recitazioni coraniche</strong>
+      <span>Hafs Mujawwad: voci egiziane storiche per il riposo</span>
+    </a>
   </div>
 
   <div class="panel zone-panel" id="zone-panel"></div>
@@ -156,6 +160,12 @@
   <h2>Esercizi guidati</h2>
   <p class="sub">Puoi leggerli o ascoltarli con la voce guida, anche a schermo bloccato. Gli occhi possono restare aperti. Se portare l’attenzione al respiro ti agita, guarda la stanza e prova «Ascolto del mondo». Nessun esercizio si fa bene o male.</p>
   <div class="list" id="session-list"></div>
+
+  <div class="panel soft" style="margin-top:1.5rem;">
+    <h2>Recitazioni coraniche</h2>
+    <p class="sub">Ascolto lento e meditativo secondo la tradizione Hafs (scuola di Kūfa / Iraq) con le voci storiche di Al-Minshawi, Abdul Basit e Al-Hussary. Puoi unire un sottofondo naturale di Bonaccia.</p>
+    <a class="btn secondary" href="#recitazioni">Apri le 114 Sure e i consigli per la notte</a>
+  </div>
 </section>
 
 <!-- ================= SONNO ================= -->
@@ -171,6 +181,12 @@
     <div class="chips" id="sl-timer" role="radiogroup" aria-label="Durata"></div>
     <label class="check"><input type="checkbox" id="sl-awake"> <span>Tieni lo schermo acceso (nero) se il blocco schermo ferma il suono</span></label>
     <button class="btn btn-night" id="sl-go" type="button">Buonanotte</button>
+  </div>
+
+  <div class="panel soft">
+    <h2>Recitazioni per la notte</h2>
+    <p class="sub">Le Sure consigliate per la notte (Maryam, Ar-Rahman, Yusuf, Al-Mulk) lette con ritmo lento e pause profonde per addormentarsi senza il contrasto del silenzio.</p>
+    <a class="btn secondary" href="#recitazioni">Ascolta prima di dormire</a>
   </div>
 
   <div class="panel">
@@ -272,6 +288,9 @@
   <p class="fine">Bonaccia è un aiuto per stare meglio, non un dispositivo medico, e non sostituisce la visita di un medico, di un audiologo o di uno psicologo. Non raccoglie dati: tutto resta sul tuo telefono.</p>
 </section>
 
+<!-- ================= RECITAZIONI ================= -->
+<section class="view" id="v-recitazioni" data-title="Recitazioni" hidden></section>
+
 </main>
 
 <!-- mini-player -->
@@ -330,6 +349,8 @@
 
 <script src="js/audio.js"></script>
 <script src="js/content.js"></script>
+<script src="js/recitazioni_data.js"></script>
+<script src="js/recitazioni.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
