@@ -11,8 +11,9 @@ export const sleep = ms => new Promise(r => setTimeout(r, ms));
 export const J = x => JSON.stringify(x);
 
 export async function avvia(porta, { w = 390, h = 844, tema = 'dark', mobile = true, profilo = null, extra = [], pulisci = true } = {}) {
-  const prof = SP + (profilo || 'prof_h' + porta);
-  if (pulisci) { try { rmSync(prof, { recursive: true, force: true }); } catch (e) {} }
+  // profilo nuovo a ogni esecuzione (Windows non sempre riesce a cancellare quello vecchio: ne resterebbero dati salvati)
+  const prof = SP + (profilo || 'prof_h' + porta + '_' + Date.now());
+  if (pulisci && profilo) { try { rmSync(prof, { recursive: true, force: true, maxRetries: 5, retryDelay: 300 }); } catch (e) {} }
   const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',
     ['--headless=new', '--disable-gpu', '--autoplay-policy=no-user-gesture-required', '--remote-debugging-port=' + porta, '--user-data-dir=' + prof, ...extra, 'about:blank'], { stdio: 'ignore' });
   let targets;

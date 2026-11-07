@@ -627,6 +627,7 @@
     }
     openSheet(box, { full: true, dark: !!o.dark, onClose: cleanup });
     lockScreen(true);
+    if (B.QuranPlayer) B.QuranPlayer.pauseIfPlaying();      // una recitazione in corso non si sovrappone al respiro
     if (o.cue) E.cueStart();
     tk = setInterval(function () { if (Date.now() < end) left.textContent = fmt(end - Date.now()); }, 500);
     left.textContent = fmt(end - Date.now());
@@ -769,6 +770,7 @@
     } });
     lockScreen(true);
     started = true;
+    if (B.QuranPlayer) B.QuranPlayer.pauseIfPlaying();      // una recitazione in corso non si sovrappone alla voce guida
     if (useRec) startRec(); else runText(idx);
   }
 

@@ -263,6 +263,7 @@
       if (B._quranBgActive) {
         B._quranBgActive = false;
         E.stop(1.5);
+        applyMediaSession();     // E.stop() ricollega i comandi della schermata di blocco al motore: tornano alla recitazione
         // il mix dell'utente torna al suo posto a dissolvenza finita
         clearTimeout(restoreTimer);
         restoreTimer = setTimeout(restoreEngine, 1800);
@@ -282,6 +283,13 @@
     if (!E.playing) E.start(2);
   }
 
+  /* Un altro audio di Bonaccia è in corso (respiro guidato, esercizio con la voce, un suono scelto dall'utente):
+     la recitazione non deve partire da sola sopra di lui (comando «play» della schermata di blocco, fine di una Sura). */
+  function otherAudioBusy() {
+    var E = B.Engine;
+    return !!E && !!(E.cueOn || E.voiceActive || (E.playing && !B._quranBgActive));
+  }
+
   function applyMediaSession(s) {
     if (!('mediaSession' in navigator)) return;
     s = s || getSurah(state.surah);
@@ -294,7 +302,7 @@
       });
     } catch (e) {}
     function azione(nome, fn) { try { navigator.mediaSession.setActionHandler(nome, fn); } catch (e) {} }   // un browser può non supportarla
-    azione('play', function () { playSurah(state.surah); });
+    azione('play', function () { if (otherAudioBusy()) return; playSurah(state.surah); });
     azione('pause', function () { audioEl.pause(); });
     azione('seekbackward', function () { skip(-15); });
     azione('seekforward', function () { skip(15); });
@@ -590,7 +598,8 @@
       if (B.Engine) B.Engine.mediaActive(false);
       renderPlayerCard();
       renderActiveItem();
-      // a fine Sura: ferma, passa alla successiva o ripeti
+      // a fine Sura: ferma, passa alla successiva o ripeti (non sopra un altro audio)
+      if (otherAudioBusy()) return;
       if (state.endMode === 'repeat') {
         playSurah(state.surah);
       } else if (state.endMode === 'next') {
@@ -1029,6 +1038,8 @@
 
   // Esporta interfaccia pubblica
   B.QuranPlayer = {
+    /* usata da app.js quando parte un respiro guidato o un esercizio con la voce: la recitazione in corso si mette in pausa */
+    pauseIfPlaying: function () { if (state.playing || state.loading) audioEl.pause(); },
     _debugSleep: function (sec) { sleepClear(); state.sleepMin = 1; state.sleepEnd = Date.now() + sec * 1000; sleepIv = setInterval(sleepTick, 1000); sleepLabel(); },
     _debugState: function () { return { surah: state.surah, playing: state.playing, loading: state.loading, scrub: state.scrub, endMode: state.endMode, fading: fading, sleepMin: state.sleepMin, paused: audioEl.paused, src: (audioEl.getAttribute('src') || '').slice(-7), reciter: state.reciter, time: audioEl.currentTime }; },
     _debug: function () { return { audioEl: audioEl === elRouted ? 'routed' : 'plain', routedFailed: routedFailed, master: bgMaster(), gain: levelDb(state.reciter, state.surah) }; },
