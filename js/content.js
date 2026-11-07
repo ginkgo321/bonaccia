@@ -34,7 +34,6 @@ window.Bonaccia.Content = {
 
   checklist: [
     'Niente caffè, tè o bibite con caffeina nelle ultime 3 o 4 ore',
-    'Niente alcol nelle ultime 4 o 5 ore (aiuta ad addormentarsi, ma spezza il sonno)',
     'Camera senza TV, computer e cibo; nessun orologio a portata di sguardo',
     'Un gesto che dice al corpo «ora si rallenta»: bagno caldo un’ora e mezza prima, luce bassa, qualcosa di tranquillo',
     'Le preoccupazioni sono già state scritte nel pomeriggio (vedi «Il quarto d’ora delle preoccupazioni»)',
