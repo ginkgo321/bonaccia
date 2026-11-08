@@ -1,5 +1,5 @@
 import { avvia, sleep, J } from './harness.mjs';
-const VISTE = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire', 'recitazioni'];
+const VISTE = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire'];
 const SIZES = [[320, 568, true], [360, 640, true], [390, 844, true], [768, 1024, false], [1280, 800, false]];
 let tot = 0, ko = 0;
 for (const [w, h, mobile] of SIZES) {
@@ -24,25 +24,6 @@ for (const [w, h, mobile] of SIZES) {
     tot++; if (p.length) ko++;
     console.log(`  ${v.padEnd(12)} ${p.length ? 'PROBLEMI: ' + p.join(' | ') : 'ok'}`);
   }
-  // lettore delle recitazioni: tutto dentro la scheda
-  await ev(`location.hash = '#recitazioni'`); await sleep(700);
-  const g = await ev(`(() => {
-    const card = document.getElementById('q-player-box').getBoundingClientRect();
-    const dentro = [...document.querySelectorAll('#q-player-box .q-controls > *, #q-player-box .q-opts-row select, #q-player-box .q-time-row, #q-player-box .q-timeline')].map(e => { const r = e.getBoundingClientRect(); return { n: (e.id || e.className || e.tagName), fuori: r.right > card.right - 1 || r.left < card.left + 1 }; });
-    const ctrl = document.querySelector('.q-controls');
-    return { cardW: Math.round(card.width), ctrlW: Math.round(ctrl.scrollWidth), ctrlClientW: Math.round(ctrl.clientWidth), tasti: [...ctrl.children].map(c => Math.round(c.getBoundingClientRect().width)), fuori: dentro.filter(d => d.fuori).map(d => d.n) };
-  })()`);
-  tot++;
-  const okc = g.fuori.length === 0 && g.ctrlW <= g.ctrlClientW + 1;
-  if (!okc) ko++;
-  console.log(`  lettore: scheda ${g.cardW}px, comandi ${g.ctrlW}/${g.ctrlClientW}px, tasti ${g.tasti.join('+')}  ${okc ? 'ok' : 'PROBLEMA: fuori dalla scheda: ' + g.fuori}`);
-  // lettore fisso sopra la barra delle schede
-  await ev(`window.scrollTo(0, 1400)`); await sleep(600);
-  const dk = await ev(`(() => { const d = document.getElementById('q-dock'), t = document.getElementById('tabs'); const a = d.getBoundingClientRect(), c = t.getBoundingClientRect(); return { visibile: d.classList.contains('show'), dockBasso: Math.round(a.bottom), tabsAlto: Math.round(c.top), larg: Math.round(a.width), titolo: Math.round(document.getElementById('q-dock-title').getBoundingClientRect().width) }; })()`);
-  tot++;
-  const okd = dk.visibile && dk.dockBasso <= dk.tabsAlto && dk.titolo >= 60;
-  if (!okd) ko++;
-  console.log(`  lettore fisso: ${J(dk)} ${okd ? 'ok' : 'PROBLEMA'}`);
   if (w === 320 || w === 1280) await shot(`vp_${w}.png`);
   tot++; if (T.errs.length) { ko++; console.log('  ERRORI JS:', J(T.errs)); }
   b.chiudi();

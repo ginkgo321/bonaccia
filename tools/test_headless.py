@@ -39,15 +39,7 @@ def test_site(directory, port, pages):
             res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
             dom = res.stdout or ""
             print(f"Page {p}: DOM length = {len(dom)} chars")
-            if "recitazioni" in p.lower():
-                nomi = ["Al-Minshawi", "Abdul Basit", "Al-Hussary", "Al-Salimi", "Al-Afasy"]
-                mancanti = [n for n in nomi if n not in dom]
-                if not mancanti:
-                    print("  OK Le 5 voci sono nel DOM!")
-                else:
-                    print("  ERRORE Voci mancanti nel DOM:", mancanti)
-                    all_ok = False
-            elif "ora" in p.lower() or p == "index.html#/":
+            if "ora" in p.lower() or p == "index.html#/":
                 if len(dom) > 1000:
                     print("  OK Home view rendered successfully!")
                 else:
@@ -60,7 +52,7 @@ def test_site(directory, port, pages):
 
 if __name__ == "__main__":
     radice = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ok = test_site(radice, 8089, ["index.html#ora", "index.html#recitazioni"])
+    ok = test_site(radice, 8089, ["index.html#ora", "index.html#suoni"])
     if ok:
         print("TUTTI I TEST PASSATI")
     else:

@@ -453,7 +453,7 @@
     $('#src-hint').textContent = failed ? 'Non riesco a caricare le registrazioni: per ora suonano quelle sintetiche. Serve la rete la prima volta.'
       : loading ? 'Sto caricando la registrazione… intanto suona la versione sintetica.' : '';
     syncMixer(); renderTimer();
-    var showMini = E.playing && currentView !== 'suoni' && currentView !== 'recitazioni' && !B._quranBgActive && $('#night').hidden;
+    var showMini = E.playing && currentView !== 'suoni' && $('#night').hidden;
     miniEl.hidden = !showMini;
     $('#mini-title').textContent = title || '';
     var left = E.timerLeft(); $('#mini-sub').textContent = E.timer && left != null ? 'Timer: ' + fmtLeft(left) : '';
@@ -627,7 +627,6 @@
     }
     openSheet(box, { full: true, dark: !!o.dark, onClose: cleanup });
     lockScreen(true);
-    if (B.QuranPlayer) B.QuranPlayer.pauseIfPlaying();      // una recitazione in corso non si sovrappone al respiro
     if (o.cue) E.cueStart();
     tk = setInterval(function () { if (Date.now() < end) left.textContent = fmt(end - Date.now()); }, 500);
     left.textContent = fmt(end - Date.now());
@@ -770,7 +769,6 @@
     } });
     lockScreen(true);
     started = true;
-    if (B.QuranPlayer) B.QuranPlayer.pauseIfPlaying();      // una recitazione in corso non si sovrappone alla voce guida
     if (useRec) startRec(); else runText(idx);
   }
 
@@ -1101,22 +1099,20 @@
   }
 
   /* ================= navigazione ================= */
-  var VIEWS = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire', 'recitazioni'], currentView = null;
+  var VIEWS = ['ora', 'suoni', 'calma', 'sonno', 'diario', 'capire'], currentView = null;
   function route() {
     var v = (location.hash || '#ora').slice(1).split('/')[0];
     if (VIEWS.indexOf(v) < 0) v = 'ora';
     if (v === currentView) return;
-    if (v === 'recitazioni') B.quranFrom = ['ora', 'calma', 'sonno'].indexOf(currentView) >= 0 ? currentView : (B.quranFrom || 'calma');
     currentView = v;
     $$('.view').forEach(function (s) { s.hidden = s.id !== 'v-' + v; });
-    $$('#tabs a').forEach(function (a) { if (a.getAttribute('data-tab') === (v === 'recitazioni' ? (B.quranFrom || 'calma') : v)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $$('#tabs a').forEach(function (a) { if (a.getAttribute('data-tab') === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var sec = $('#v-' + v);
     document.title = (v === 'ora' ? '' : (sec ? sec.getAttribute('data-title') : '') + ' – ') + 'Bonaccia';
     window.scrollTo(0, 0);
     if (v === 'ora') { renderGreeting(); renderZonePanel(); }
     if (v === 'sonno') renderSonno();
     if (v === 'diario') { dsel.sound = soundName(); renderDiarySounds(); renderDiary(); }
-    if (v === 'recitazioni' && B.QuranPlayer) B.QuranPlayer.init();
     renderEngine(); kickField();
   }
   window.addEventListener('hashchange', route);

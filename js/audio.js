@@ -433,7 +433,7 @@
       this._media();
       var self = this;
       setTimeout(function () {
-        if (!self.playing && !self.voiceActive && !self.extActive) {
+        if (!self.playing && !self.voiceActive) {
           if (!self.cueOn) { try { self.ctx.suspend(); } catch (e) {} }
           self._keepAlive(false);
         }
@@ -442,48 +442,6 @@
     },
 
     toggle: function () { if (this.playing) this.stop(1.5); else this.start(2); },
-
-    /* ---- audio esterno (le recitazioni): passa dal motore per poterne regolare il livello ----
-       Il percorso ha un guadagno proprio (setMediaGainDb) e un limitatore a -3 dB, separato dai suoni di sottofondo. */
-    extActive: false,
-    attachMedia: function (el) {
-      if (!this.ensure()) return false;
-      var ctx = this.ctx;
-      if (!this.vgain) {
-        this.vgain = ctx.createGain(); this.vgain.gain.value = 1;
-        this.vlimit = ctx.createDynamicsCompressor();
-        this.vlimit.threshold.value = -3; this.vlimit.knee.value = 0; this.vlimit.ratio.value = 20;
-        this.vlimit.attack.value = 0.002; this.vlimit.release.value = 0.2;
-        this.vanalyser = ctx.createAnalyser(); this.vanalyser.fftSize = 2048;
-        this.vgain.connect(this.vlimit); this.vlimit.connect(ctx.destination); this.vlimit.connect(this.vanalyser);
-      }
-      if (!el._bonSrc) {
-        try { el._bonSrc = ctx.createMediaElementSource(el); el._bonSrc.connect(this.vgain); } catch (e) { return false; }
-      }
-      return true;
-    },
-    setMediaGainDb: function (db, immediate) {
-      if (!this.vgain) return;
-      var g = this.vgain.gain, t = this.ctx.currentTime;
-      g.cancelScheduledValues(t);
-      if (immediate) g.setValueAtTime(dbToGain(db), t); else g.setTargetAtTime(dbToGain(db), t, 0.05);
-    },
-    /* dissolvenza dell'audio esterno fino al silenzio in 'sec' secondi (timer di spegnimento) */
-    fadeMedia: function (sec) {
-      if (!this.vgain) return;
-      var g = this.vgain.gain, t = this.ctx.currentTime;
-      g.cancelScheduledValues(t);
-      g.setValueAtTime(g.value, t);
-      g.linearRampToValueAtTime(0.0001, t + Math.max(0.1, sec));
-    },
-    mediaActive: function (on) {
-      this.extActive = !!on;
-      if (on) { this.ensure(); return; }
-      var self = this;
-      setTimeout(function () {
-        if (self.ctx && !self.extActive && !self.playing && !self.voiceActive && !self.cueOn) { try { self.ctx.suspend(); } catch (e) {} }
-      }, 300);
-    },
 
     setMaster: function (v) {
       this.masterV = Math.max(0, Math.min(1, v));
