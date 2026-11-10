@@ -1,11 +1,11 @@
 /* Bonaccia – service worker: tiene l’app e i suoni in memoria per usarla senza rete. */
-var CACHE = 'bonaccia-v13';
+var CACHE = 'bonaccia-v15';
 /* Le recitazioni ora stanno in Sakina (stesso indirizzo, memoria condivisa): la vecchia memoria «bonaccia-recitazioni-v1» non si tocca,
    perché Sakina ne sposta le Sure salvate al primo avvio e poi la svuota. */
 var QURAN_CACHE = 'bonaccia-recitazioni-v1';
 var FILES = [
   './', 'index.html', 'manifest.webmanifest',
-  'css/style.css', 'js/version.js', 'js/audio.js', 'js/content.js', 'js/app.js',
+  'css/style.css', 'js/version.js', 'js/audio.js', 'js/content.js', 'js/app.js', 'js/trasferimento.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'
 ];
 var NATURA = ['pioggia', 'mare', 'fiume', 'fontana', 'bosco', 'drone'].map(function (n) { return 'audio/natura/natura_' + n + '.mp3'; });

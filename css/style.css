@@ -390,3 +390,11 @@ textarea { resize: vertical; margin-bottom: 10px; }
 .version { text-align: center; color: var(--ink2); font-size: .88rem; margin: 2rem 0 .4rem; line-height: 1.6; }
 .version .love { display: block; font-family: var(--serif); font-size: 1rem; margin-top: .2rem; }
 .version .heart { color: var(--warm); }
+/* avviso «nuovo indirizzo» / «hai già usato Bonaccia?»: js/trasferimento.js */
+.avviso-nuovo { background: var(--surf); border: 1.5px solid var(--line); border-radius: 18px 18px 18px 6px; padding: 14px 16px; margin: .4rem 0 1rem; }
+.avviso-nuovo p { margin: 0; }
+.avviso-nuovo .avviso-titolo { font-family: var(--serif); font-weight: 600; font-size: 1.1rem; line-height: 1.3; }
+.avviso-nuovo .avviso-testo { color: var(--ink2); font-size: .94rem; margin-top: 2px; }
+.avviso-nuovo .avviso-azioni { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.avviso-nuovo .btn { padding: 8px 16px; min-height: 44px; }
+#trasferimento a.btn { text-decoration: none; }
